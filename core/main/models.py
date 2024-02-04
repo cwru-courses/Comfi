@@ -1,17 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
-class User(models.Model):
-    userID = models.AutoField(primary_key=True)
-    firstName = models.CharField(max_length=31)
-    lastName = models.CharField(max_length=31)
-    username = models.CharField(max_length=255, unique=True)
+class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
 
 class Interest(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     movieID = models.CharField(max_length=63)
     like = models.BooleanField()
     timesViewed = models.IntegerField()

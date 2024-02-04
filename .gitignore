@@ -8,6 +8,10 @@ node_modules/
 dist/
 web-build/
 
+# Database
+core/main/migrations/
+core/db.sqlite3
+
 # Native
 *.orig.*
 *.jks
@@ -31,5 +35,5 @@ yarn-error.*
 # local env files
 .env*.local
 
-# typescript
-*.tsbuildinfo
+# vscode
+.vscode/

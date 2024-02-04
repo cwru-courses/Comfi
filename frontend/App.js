@@ -1,40 +1,48 @@
-import { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as SecureStore from 'expo-secure-store';
+import LoginScreen from './screens/login';
+import HomeScreen from './screens/home';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [users, setUsers] = useState([])
-  // Must be changed to IP address of host
-  const tempIPAddr = '0.0.0.0'
+  const [isLoading, setIsLoading] = useState(true);
+  const [userToken, setUserToken] = useState(null);
+
+  const getUserToken = async () => {
+    try {
+      const token = await SecureStore.getItemAsync('access_token');
+      setUserToken(token);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    axios.get(`http://${tempIPAddr}:8000/api/users`)
-    .then((res) => {setUsers(res.data)})
-    .catch((err) => console.log(err));
-  }, [])
+    getUserToken();
+  }, []);
 
+  // Add this to the return function, sets a loading screen when something is happening
+  // that is taking longer.
+  if (isLoading) {
+    return <View><Text>The Screen is loading</Text></View>;
+  }
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app! </Text>
-      <View>
-        {console.log(users)}
-        {users.map((user, index) => (
-          <View key={index}>
-            <Text>{user.username}</Text>
-          </View>
-        ))}
-      </View>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator>
+        {userToken == null ? (
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            initialParams={{ setUserToken }}
+          />
+        ) : (
+          <Stack.Screen name="Home" component={HomeScreen} initialParams={{ setUserToken }} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

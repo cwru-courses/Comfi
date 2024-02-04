@@ -1,12 +1,18 @@
 from rest_framework  import serializers
-from .models import User, Interest
+from .models import CustomUser, Interest
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    class Meta:
+        model = CustomUser
+        fields = ('first_name', 'last_name', 'username', 'password')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('userID', 'firstName', 'lastName', 'username')
+        model = CustomUser
+        fields = ('id', 'is_staff', 'first_name', 'last_name', 'username')
 
 class InterestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interest
-        fields = ('user', 'movieID', 'like', 'timesViewed')
+        fields = ('id', 'movieID', 'like', 'timesViewed')

@@ -2,20 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as SecureStore from 'expo-secure-store';
 import LoginScreen from './screens/login';
 import HomeScreen from './screens/home';
+import authenticateUser from './config/authConfig';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [userToken, setUserToken] = useState(null);
+  const [userToken, setUserToken] = useState(false);
 
   const getUserToken = async () => {
     try {
-      const token = await SecureStore.getItemAsync('access_token');
-      setUserToken(token);
+      const isAuthenticated = await authenticateUser();
+      setUserToken(isAuthenticated);
+    } catch (err) {
+      console.log(err);
+      setUserToken(false);
     } finally {
       setIsLoading(false);
     }
@@ -33,7 +36,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {userToken == null ? (
+        {!userToken ? (
           <Stack.Screen
             name="Login"
             component={LoginScreen}

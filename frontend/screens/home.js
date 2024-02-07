@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableWithoutFeedback,
+  View, Text, StyleSheet, TouchableWithoutFeedback, ScrollView, Image
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -8,9 +8,12 @@ import axios from 'axios';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'navy',
+    alignItems: 'left',
+    justifyContent: 'top',
+    padding: 5,
+    width: 300,
+    height: 300
   },
   button: {
     backgroundColor: 'black',
@@ -24,7 +27,14 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontSize: 16,
+    padding:2
   },
+  page: {
+    flex:1,
+    backgroundColor: 'midnightblue',
+    padding: 60
+
+  }
 });
 
 const TEMP_IP = 'CHANGE_TO_YOUR_IP_ADDR';
@@ -92,11 +102,20 @@ export default function HomeScreen({ route }) {
   }
 
   return (
-    <View>
+    <View style = {styles.page}>
+      <ScrollView>
       <View style={styles.container}>
-        <Text>
-          This is the home screen
+        <Text style = {styles.text}>
+            <Text style={{fontWeight:'bold',fontSize:20}}>Movie Of The Day</Text>~{"\n"}
+            Here is a description of the movie. Descriptions can be rather long so it may wrap to the next line like so.
         </Text>
+        <Image 
+        Source = {{uri:'https://picsum.photos/100'}} 
+        style = {{width: 100, height:100
+          // alignItems:'right',justifyContent:'bottom'
+        }}
+        />
+
       </View>
       <View>
         <Text>
@@ -110,6 +129,7 @@ export default function HomeScreen({ route }) {
           </Text>
         </View>
       </TouchableWithoutFeedback>
+      </ScrollView>
     </View>
   );
 }

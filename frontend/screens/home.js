@@ -9,8 +9,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'navy',
-    alignItems: 'left',
-    justifyContent: 'top',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 5,
     width: 300,
     height: 300
@@ -27,7 +27,9 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontSize: 16,
-    padding:2
+    padding:2,
+    flexDirection: 'column',
+    flexWrap:'wrap'
   },
   page: {
     flex:1,
@@ -109,12 +111,12 @@ export default function HomeScreen({ route }) {
             <Text style={{fontWeight:'bold',fontSize:20}}>Movie Of The Day</Text>~{"\n"}
             Here is a description of the movie. Descriptions can be rather long so it may wrap to the next line like so.
         </Text>
+        <View style = {{alignItems:'center',justifyContent:'center',padding: 5}}>
         <Image 
-        Source = {{uri:'https://picsum.photos/100'}} 
-        style = {{width: 100, height:100
-          // alignItems:'right',justifyContent:'bottom'
-        }}
+        source = {{uri:'https://picsum.photos/200'}} 
+        style = {{width: 200, height:200}}
         />
+        </View>
 
       </View>
       <View>
@@ -129,6 +131,7 @@ export default function HomeScreen({ route }) {
           </Text>
         </View>
       </TouchableWithoutFeedback>
+      
       </ScrollView>
     </View>
   );

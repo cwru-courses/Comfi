@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableWithoutFeedback,
+  View, Text, StyleSheet, TouchableWithoutFeedback, ScrollView, Image
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
@@ -9,9 +9,12 @@ import { ENDPOINT_BASE_URL } from '../config/constants';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'navy',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 5,
+    width: 300,
+    height: 300
   },
   button: {
     backgroundColor: 'black',
@@ -25,7 +28,16 @@ const styles = StyleSheet.create({
   text: {
     color: '#fff',
     fontSize: 16,
+    padding:2,
+    flexDirection: 'column',
+    flexWrap:'wrap'
   },
+  page: {
+    flex:1,
+    backgroundColor: 'midnightblue',
+    padding: 60
+
+  }
 });
 
 export default function HomeScreen({ route }) {
@@ -64,11 +76,20 @@ export default function HomeScreen({ route }) {
   };
 
   return (
-    <View>
+    <View style = {styles.page}>
+      <ScrollView>
       <View style={styles.container}>
-        <Text>
-          This is the home screen
+        <Text style = {styles.text}>
+            <Text style={{fontWeight:'bold',fontSize:20}}>Movie Of The Day</Text>~{"\n"}
+            Here is a description of the movie. Descriptions can be rather long so it may wrap to the next line like so.
         </Text>
+        <View style = {{alignItems:'center',justifyContent:'center',padding: 5}}>
+        <Image 
+        source = {{uri:'https://picsum.photos/200'}} 
+        style = {{width: 200, height:200}}
+        />
+        </View>
+
       </View>
       <View>
         <Text>
@@ -82,6 +103,8 @@ export default function HomeScreen({ route }) {
           </Text>
         </View>
       </TouchableWithoutFeedback>
+      
+      </ScrollView>
     </View>
   );
 }

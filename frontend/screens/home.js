@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import { ENDPOINT_BASE_URL } from '../config/constants';
 
 const styles = StyleSheet.create({
   container: {
@@ -39,69 +40,40 @@ const styles = StyleSheet.create({
   }
 });
 
-const TEMP_IP = 'CHANGE_TO_YOUR_IP_ADDR';
-
 export default function HomeScreen({ route }) {
   const { setUserToken } = route.params;
   const [message, setMessage] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Could log errors when calling backend, except for login or logout.
   useEffect(() => {
-    const refreshToken = SecureStore.getItem('refresh_token');
-
-    // eslint-disable-next-line no-use-before-define
-    if (!checkAuthentication(refreshToken)) {
-      setUserToken(null);
+    if (!isAuthenticated) {
+      // eslint-disable-next-line no-use-before-define
+      // checkAuthentication(refreshToken);
+      axios.get(
+        `http://${ENDPOINT_BASE_URL}:8000/home/`,
+        { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
+      ).then((res) => {
+        setMessage(res.data.message);
+      }).catch((err) => {
+        console.log(err);
+      });
+      setIsAuthenticated(true);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleSignoutPress = async () => {
     axios.post(
-      `http://${TEMP_IP}:8000/logout/`,
+      `http://${ENDPOINT_BASE_URL}:8000/logout/`,
       { refresh_token: SecureStore.getItem('refresh_token') },
       { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
     ).then(() => {
       SecureStore.deleteItemAsync('access_token');
       SecureStore.deleteItemAsync('refresh_token');
+      axios.defaults.headers.common.Authorization = undefined;
       setUserToken(null);
     }).catch((err) => console.log(err));
   };
-
-  function checkAuthentication(refreshToken) {
-    let responseMessage = '';
-
-    const isAccessTokenValid = axios.get(
-      `http://${TEMP_IP}:8000/home/`,
-      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
-    ).then((res) => {
-      responseMessage = res.data.message;
-      setMessage(responseMessage);
-      return true;
-    }).catch(() => false);
-    if (isAccessTokenValid) {
-      return true;
-    }
-    const isRefreshTokenValid = axios.post(`http://${TEMP_IP}:8000/token/refresh/`, { refresh: refreshToken }).then((res) => {
-      // eslint-disable-next-line camelcase
-      const { access, refresh } = res.data;
-      setUserToken(access);
-      SecureStore.setItem('access_token', access);
-      SecureStore.setItem('refresh_token', refresh);
-      axios.defaults.headers.common.Authorization = `Bearer ${access}`;
-      return true;
-    }).catch((err) => { console.log(err); return false; });
-
-    if (isRefreshTokenValid) {
-      axios.get(
-        `http://${TEMP_IP}:8000/home/`,
-        { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
-      ).then((res) => {
-        setMessage(res.data.message);
-      }).catch((err) => console.log(err));
-      return true;
-    }
-    return false;
-  }
 
   return (
     <View style = {styles.page}>

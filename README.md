@@ -10,8 +10,7 @@ It is recommended that you use pipenv or virtualenv when running Django server l
 
 To run the server, in terminal run the following command in the `core/` directory:
 
-
-`python manage.py runserver`
+`python manage.py runserver 0.0.0.0:8000`
 
 In the terminal window, an address is provided that lets you view in browser.
 
@@ -32,6 +31,6 @@ in `frontend/` directory, run:
 
 `npm install`
 
-Before starting, the IP Address to reach the backend must be changed to the IP address of the device that it is running on. In settings you should find the IPv4 address. Change the TEMP_IP in home.js and login.js to be the address found. Then run the server:
+Before starting, the IP Address to reach the backend must be changed to the IP address of the device that it is running on. In settings you should find the IPv4 address. Change the ENDPOINT_BASE_URL in constants.js to be the address found. Then run the server:
 
 `npx expo start`

@@ -1,0 +1,1 @@
+export const ENDPOINT_BASE_URL = 'CHANGE_TO_YOUR_IP';

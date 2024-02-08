@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
+import { ENDPOINT_BASE_URL } from '../config/constants';
 
 const styles = StyleSheet.create({
   container: {
@@ -55,8 +56,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const TEMP_IP = 'CHANGE_TO_YOUR_IP_ADDR';
-
 export default function LoginScreen({ route }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -82,7 +81,7 @@ export default function LoginScreen({ route }) {
     };
 
     axios.post(
-      `http://${TEMP_IP}:8000/token/`,
+      `http://${ENDPOINT_BASE_URL}:8000/token/`,
       user,
       { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
     ).then((res) => {
@@ -108,7 +107,7 @@ export default function LoginScreen({ route }) {
       last_name,
     };
     axios.post(
-      `http://${TEMP_IP}:8000/register/`,
+      `http://${ENDPOINT_BASE_URL}:8000/register/`,
       user,
       { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
     ).then((res) => {

@@ -7,7 +7,9 @@ It is recommended that you use pipenv or virtualenv when running Django server l
 
 `pipenv shell`
 
+
 To run the server, in terminal run the following command in the `core/` directory:
+
 
 `python manage.py runserver`
 
@@ -22,6 +24,7 @@ Follow the instructed in terminal window, then go the the address provided once 
 ***
 It is required to be on pipenv environement for modules to import correctly. In VS Code change interpreter in command pallet to 'pipenv' interpreter
 ***
+
 
 ### To run frontend follow these steps .
 

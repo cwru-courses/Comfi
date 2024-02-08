@@ -7,7 +7,9 @@ It is recommended that you use pipenv or virtualenv when running Django server l
 
 `pipenv shell`
 
-To run the server, in terminal run the following command:
+
+To run the server, in terminal run the following command in the `core/` directory:
+
 
 `python manage.py runserver`
 
@@ -22,3 +24,14 @@ Follow the instructed in terminal window, then go the the address provided once 
 ***
 It is required to be on pipenv environement for modules to import correctly. In VS Code change interpreter in command pallet to 'pipenv' interpreter
 ***
+
+
+### To run frontend follow these steps .
+
+in `frontend/` directory, run:
+
+`npm install`
+
+Before starting, the IP Address to reach the backend must be changed to the IP address of the device that it is running on. In settings you should find the IPv4 address. Change the TEMP_IP in home.js and login.js to be the address found. Then run the server:
+
+`npx expo start`

@@ -9,15 +9,14 @@ import { ENDPOINT_BASE_URL } from '../config/constants';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'navy',
+    backgroundColor: 'lightgrey',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 5,
-    width: 300,
-    height: 300
+    margin:5,
+    padding: 10
   },
   button: {
-    backgroundColor: 'black',
+    backgroundColor: 'grey',
     borderRadius: 12,
     padding: 10,
     margin: 5,
@@ -26,15 +25,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: '#fff',
+    color: 'black',
+    fontSize: 16,
+    padding: 2,
+    margin: 2,
+    textAlign: 'left',
+    flexDirection: 'column',
+    flexWrap:'wrap'
+  },
+  whitetext:{
+    color: 'white',
     fontSize: 16,
     padding:2,
+    margin: 2,
+    textAlign: 'left',
     flexDirection: 'column',
     flexWrap:'wrap'
   },
   page: {
     flex:1,
-    backgroundColor: 'midnightblue',
+    backgroundColor: 'white',
+    alignItems:'center',
     padding: 60
 
   }
@@ -79,8 +90,8 @@ export default function HomeScreen({ route }) {
     <View style = {styles.page}>
       <ScrollView>
       <View style={styles.container}>
+      <Text style={{fontWeight:'bold',fontSize:20,flexWrap: 'wrap'}}>{"\n"}Movie Of The Day</Text>
         <Text style = {styles.text}>
-            <Text style={{fontWeight:'bold',fontSize:20}}>Movie Of The Day</Text>~{"\n"}
             Here is a description of the movie. Descriptions can be rather long so it may wrap to the next line like so.
         </Text>
         <View style = {{alignItems:'center',justifyContent:'center',padding: 5}}>
@@ -98,7 +109,7 @@ export default function HomeScreen({ route }) {
       </View>
       <TouchableWithoutFeedback onPress={handleSignoutPress}>
         <View style={styles.button}>
-          <Text style={styles.text}>
+          <Text style={styles.whitetext}>
             Sign out
           </Text>
         </View>

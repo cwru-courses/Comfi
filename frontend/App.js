@@ -1,55 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import LoginScreen from './screens/login';
-import HomeScreen from './screens/home';
-import authenticateUser from './config/authConfig';
-import Play from './screens/play';
+import { Button, View } from 'react-native';
+import {Gallery} from './Gallery'
 
-const Tab = createBottomTabNavigator();
-
-export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [userToken, setUserToken] = useState(false);
-
-  const getUserToken = async () => {
-    try {
-      const isAuthenticated = await authenticateUser();
-      setUserToken(isAuthenticated);
-    } catch (err) {
-      console.log(err);
-      setUserToken(false);
-    } finally {
-      setIsLoading(false);
-    }
+export default function App()
+{
+  return 
+  {
+    <View style={{flex: 1, backgroundColor: "white", padding: 60 }}>
+      <Button title="Previous" onPress={() => console.log("Previous movie")}/>
+      <Button title="Like" onPress={() => console.log("Movie liked")}/>
+      <Button title="Next" onPress={() => console.log("Next movie")}/>
+      <Text>
+        <Text style={{color: "gray"}}>Movie Name</Text>Hello World
+      </Text>
+      <div>
+        {
+          Gallery(Image)
+        }
+      </div>
+      <Image>
+        source={{uri: "https://www.imdb.com/title/tt1853728/mediaviewer/rm958180352/"}}
+        style={{width:300, height:300}}
+      </Image>
+    </View>
   };
-
-  useEffect(() => {
-    getUserToken();
-  }, []);
-
-  // Add this to the return function, sets a loading screen when something is happening
-  // that is taking longer.
-  if (isLoading) {
-    return <View><Text>The Screen is loading</Text></View>;
-  }
-  return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        {!userToken ? (
-          <Tab.Screen
-            name="Login"
-            component={LoginScreen}
-            initialParams={{ setUserToken }}
-          />
-        ) : (
-          <>
-            <Tab.Screen name="Home" component={HomeScreen} initialParams={{ setUserToken }} />
-            <Tab.Screen name="Play" component={Play} initialParams={{ setUserToken }} />
-          </>
-        )}
-      </Tab.Navigator>
-    </NavigationContainer>
-  );
 }
+
+

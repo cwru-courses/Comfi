@@ -36,7 +36,7 @@ export default function App() {
   }
   return (
     <NavigationContainer>
-      <Tab.Navigator>
+      <Tab.Navigator screenOptions={{ headerShown: false }}>
         {!userToken ? (
           <Tab.Screen
             name="Login"

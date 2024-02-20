@@ -9,6 +9,10 @@
         "ecmaVersion": "latest"
     },
     "rules": {
-        "react/jsx-filename-extension": 0
+        "react/jsx-filename-extension": 0,
+        "react/prop-types": ["off"],
+        "global-require": "off",
+        "react/jsx-no-constructed-context-values": "off",
+        "react/no-unstable-nested-components": "off"
     }
 }

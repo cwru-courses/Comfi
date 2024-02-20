@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableWithoutFeedback, ScrollView, Image
+  View, Text, StyleSheet, ScrollView, Image,
 } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 
@@ -13,43 +12,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 5,
-    width: 300,
-    height: 300
-  },
-  button: {
-    backgroundColor: 'black',
-    borderRadius: 12,
-    padding: 10,
-    margin: 5,
-    width: 250,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: '0.9rem',
+    height: '0.9rem',
   },
   text: {
     color: '#fff',
     fontSize: 16,
-    padding:2,
+    padding: 2,
     flexDirection: 'column',
-    flexWrap:'wrap'
+    flexWrap: 'wrap',
   },
   page: {
-    flex:1,
+    flex: 1,
     backgroundColor: 'midnightblue',
-    padding: 60
+    padding: 60,
 
-  }
+  },
 });
 
-export default function HomeScreen({ route }) {
-  const { setUserToken } = route.params;
+export default function HomeScreen() {
   const [message, setMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Could log errors when calling backend, except for login or logout.
   useEffect(() => {
     if (!isAuthenticated) {
-      // eslint-disable-next-line no-use-before-define
-      // checkAuthentication(refreshToken);
       axios.get(
         `http://${ENDPOINT_BASE_URL}:8000/home/`,
         { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
@@ -62,48 +49,29 @@ export default function HomeScreen({ route }) {
     }
   }, [isAuthenticated]);
 
-  const handleSignoutPress = async () => {
-    axios.post(
-      `http://${ENDPOINT_BASE_URL}:8000/logout/`,
-      { refresh_token: SecureStore.getItem('refresh_token') },
-      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
-    ).then(() => {
-      SecureStore.deleteItemAsync('access_token');
-      SecureStore.deleteItemAsync('refresh_token');
-      axios.defaults.headers.common.Authorization = undefined;
-      setUserToken(null);
-    }).catch((err) => console.log(err));
-  };
-
   return (
-    <View style = {styles.page}>
+    <View style={styles.page}>
       <ScrollView>
-      <View style={styles.container}>
-        <Text style = {styles.text}>
-            <Text style={{fontWeight:'bold',fontSize:20}}>Movie Of The Day</Text>~{"\n"}
-            Here is a description of the movie. Descriptions can be rather long so it may wrap to the next line like so.
-        </Text>
-        <View style = {{alignItems:'center',justifyContent:'center',padding: 5}}>
-        <Image 
-        source = {{uri:'https://picsum.photos/200'}} 
-        style = {{width: 200, height:200}}
-        />
-        </View>
-
-      </View>
-      <View>
-        <Text>
-          {message}
-        </Text>
-      </View>
-      <TouchableWithoutFeedback onPress={handleSignoutPress}>
-        <View style={styles.button}>
+        <View style={styles.container}>
+          <Text style={{ fontWeight: 'bold', fontSize: 20 }}>Movie Of The Day</Text>
           <Text style={styles.text}>
-            Sign out
+            Here is a description of the movie. Descriptions can be rather long so
+            it may wrap to the next line like so.
+          </Text>
+          <View style={{ alignItems: 'center', justifyContent: 'center', padding: 5 }}>
+            <Image
+              source={{ uri: 'https://picsum.photos/200' }}
+              style={{ width: 200, height: 200 }}
+            />
+          </View>
+
+        </View>
+        <View>
+          <Text>
+            {message}
           </Text>
         </View>
-      </TouchableWithoutFeedback>
-      
+
       </ScrollView>
     </View>
   );

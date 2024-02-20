@@ -1,0 +1,91 @@
+import React, {
+  createContext, useContext, useState, useEffect,
+} from 'react';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
+import authenticateUser from './authConfig';
+import { ENDPOINT_BASE_URL } from './constants';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [userToken, setUserToken] = useState(false);
+  const [error, setError] = useState('');
+  const [isSignout, setIsSignout] = useState(false);
+
+  const getUserToken = async () => {
+    try {
+      const isAuthenticated = await authenticateUser();
+      setUserToken(isAuthenticated);
+    } catch (err) {
+      console.log(err);
+      setUserToken(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isSignout) {
+      getUserToken();
+    }
+  }, []);
+
+  const signIn = (user) => {
+    setError('');
+    axios.post(
+      `http://${ENDPOINT_BASE_URL}:8000/token/`,
+      user,
+      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
+    ).then((res) => {
+      SecureStore.setItem('access_token', res.data.access);
+      SecureStore.setItem('refresh_token', res.data.refresh);
+      axios.defaults.headers.common.Authorization = `Bearer ${res.data.access}`;
+      setUserToken(true);
+    }).catch((err) => {
+      console.log(err);
+      setError('Invalid Login');
+    });
+  };
+
+  const signOut = () => {
+    axios.post(
+      `http://${ENDPOINT_BASE_URL}:8000/logout/`,
+      { refresh_token: SecureStore.getItem('refresh_token') },
+      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
+    ).then(() => {
+      SecureStore.deleteItemAsync('access_token');
+      SecureStore.deleteItemAsync('refresh_token');
+      axios.defaults.headers.common.Authorization = undefined;
+      setUserToken(false);
+    }).catch((err) => {
+      console.log(err);
+    });
+  };
+
+  const createAccount = (user) => {
+    setError('');
+    axios.post(
+      `http://${ENDPOINT_BASE_URL}:8000/register/`,
+      user,
+      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
+    ).then((res) => {
+      SecureStore.setItem('access_token', res.data.access);
+      SecureStore.setItem('refresh_token', res.data.refresh);
+      axios.defaults.headers.common.Authorization = `Bearer ${res.data.access}`;
+      setUserToken(true);
+    }).catch((err) => {
+      console.log(err);
+      setError('Username Exists');
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{
+      signIn, signOut, createAccount, setUserToken, userToken, setError, error, setIsSignout,
+    }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => useContext(AuthContext);

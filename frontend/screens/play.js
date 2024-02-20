@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 30,
-    marginTop: 20,
+    paddingTop: '15%',
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
@@ -26,32 +25,38 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  input: {
+    height: 40,
+    width: 300,
+    margin: 10,
+    borderWidth: 1.5,
+    padding: 10,
+  },
 });
 
-export default function Play() {
+export default function PlayScreen() {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [websocket, setWebSocket] = useState(null);
-  const channelId = Math.floor(Math.random() * 10000);
+  const [channelId, setChannelId] = useState('');
 
   // Function to create WebSocket
   const createWebSocket = () => {
+    if (channelId === '') return;
     const ws = new WebSocket(`ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/low/`, {
       onOpen: () => console.log('opened'),
       shouldReconnect: () => true,
     });
+    // eslint-disable-next-line no-use-before-define
     ws.onmessage = handleWebSocketMessage;
     setWebSocket(ws);
   };
 
   // Create WebSocket on component mount
-  useEffect(() => {
-    createWebSocket();
-    return () => {
-      if (websocket) {
-        websocket.close();
-        setWebSocket(null);
-      }
-    };
+  useEffect(() => () => {
+    if (websocket) {
+      websocket.close();
+      setWebSocket(null);
+    }
   }, []);
 
   const handleWebSocketMessage = (e) => {
@@ -69,7 +74,7 @@ export default function Play() {
 
   const sendChoice = (userChoice) => {
     if (websocket) {
-      websocket.send(JSON.stringify({ type: 'choice', client_message: userChoice }));
+      websocket.send(JSON.stringify({ type: 'client.choice', client_message: userChoice }));
     }
   };
 
@@ -87,17 +92,16 @@ export default function Play() {
 
   return (
     <View style={styles.container}>
-      <Text>Django Channel Test</Text>
       {websocket !== null ? (
         <View>
-          <TouchableWithoutFeedback title onPress={() => sendChoice('Like')}>
+          <TouchableWithoutFeedback title onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
             <View style={styles.button}>
               <Text style={styles.text}>
                 Like
               </Text>
             </View>
           </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={() => sendChoice('Dislike')}>
+          <TouchableWithoutFeedback onPress={() => sendChoice({ choice: 'Dislike', movieID: 'MOVIE_ID' })}>
             <View style={styles.button}>
               <Text style={styles.text}>
                 Dislike
@@ -122,8 +126,9 @@ export default function Play() {
       ) : (
         <>
           <Text>
-            THE CONNECTION IS CLOSED
+            Create/Join Group
           </Text>
+          <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
           <TouchableWithoutFeedback onPress={reopenWebSocket}>
             <View style={styles.button}>
               <Text style={styles.text}>

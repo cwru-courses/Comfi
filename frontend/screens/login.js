@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, TouchableWithoutFeedback, StyleSheet, TextInput,
 } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
-import { ENDPOINT_BASE_URL } from '../config/constants';
+import { useAuth } from '../config/AuthContext';
 
 const styles = StyleSheet.create({
   container: {
@@ -56,16 +54,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function LoginScreen({ route }) {
+export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   // eslint-disable-next-line camelcase
   const [first_name, setFirstName] = useState('');
   // eslint-disable-next-line camelcase
   const [last_name, setLastName] = useState('');
-  const [unsuccessfulLogin, setUnsuccessfulLogin] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const { setUserToken } = route.params;
+  const {
+    signIn, createAccount, error, setIsSignout,
+  } = useAuth();
 
   /* TODO
   * Limit the number of attempts a user has
@@ -73,6 +72,7 @@ export default function LoginScreen({ route }) {
   * i.e. not black username or password, greter than 8 chars, etc.
   */
   const handleLoginPress = (e) => {
+    setIsSignout(false);
     e.preventDefault();
 
     const user = {
@@ -80,23 +80,11 @@ export default function LoginScreen({ route }) {
       password,
     };
 
-    axios.post(
-      `http://${ENDPOINT_BASE_URL}:8000/token/`,
-      user,
-      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
-    ).then((res) => {
-      SecureStore.setItem('access_token', res.data.access);
-      SecureStore.setItem('refresh_token', res.data.refresh);
-      axios.defaults.headers.common.Authorization = `Bearer ${res.data.access}`;
-      setUserToken(res.data.access);
-    }).catch((err) => {
-      // do something with the error thrown
-      console.log(err);
-      setUnsuccessfulLogin(true);
-    });
+    signIn(user);
   };
 
   const handleCreatePress = (e) => {
+    setIsSignout(false);
     e.preventDefault();
     const user = {
       username,
@@ -106,20 +94,8 @@ export default function LoginScreen({ route }) {
       // eslint-disable-next-line camelcase
       last_name,
     };
-    axios.post(
-      `http://${ENDPOINT_BASE_URL}:8000/register/`,
-      user,
-      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
-    ).then((res) => {
-      SecureStore.setItem('access_token', res.data.access);
-      SecureStore.setItem('refresh_token', res.data.refresh);
-      axios.defaults.headers.common.Authorization = `Bearer ${res.data.access}`;
-      setUserToken(res.data.access);
-    }).catch((err) => {
-      // do something with the error thrown
-      console.log(err);
-      setUnsuccessfulLogin(true);
-    });
+
+    createAccount(user);
   };
 
   return (
@@ -169,10 +145,10 @@ export default function LoginScreen({ route }) {
           </Text>
         </View>
       </TouchableWithoutFeedback>
-      {unsuccessfulLogin && (
+      {error && (
       <View style={styles.unsuccessful}>
         <Text style={styles.unsuccessfulText}>
-          Try Again
+          {error}
         </Text>
       </View>
       )}

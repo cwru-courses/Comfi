@@ -69,7 +69,7 @@ export default function LoginScreen() {
   /* TODO
   * Limit the number of attempts a user has
   * Limit when the user can press login
-  * i.e. not black username or password, greter than 8 chars, etc.
+  * i.e. not blank username or password, greter than 8 chars, etc.
   */
   const handleLoginPress = (e) => {
     setIsSignout(false);

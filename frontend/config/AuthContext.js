@@ -9,6 +9,7 @@ import { ENDPOINT_BASE_URL } from './constants';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const username = SecureStore.getItem('username');
   const [userToken, setUserToken] = useState(false);
   const [error, setError] = useState('');
   const [isSignout, setIsSignout] = useState(false);
@@ -38,6 +39,7 @@ export function AuthProvider({ children }) {
     ).then((res) => {
       SecureStore.setItem('access_token', res.data.access);
       SecureStore.setItem('refresh_token', res.data.refresh);
+      SecureStore.setItem('username', user.username);
       axios.defaults.headers.common.Authorization = `Bearer ${res.data.access}`;
       setUserToken(true);
     }).catch((err) => {
@@ -54,6 +56,7 @@ export function AuthProvider({ children }) {
     ).then(() => {
       SecureStore.deleteItemAsync('access_token');
       SecureStore.deleteItemAsync('refresh_token');
+      SecureStore.deleteItemAsync('username');
       axios.defaults.headers.common.Authorization = undefined;
       setUserToken(false);
     }).catch((err) => {
@@ -70,6 +73,7 @@ export function AuthProvider({ children }) {
     ).then((res) => {
       SecureStore.setItem('access_token', res.data.access);
       SecureStore.setItem('refresh_token', res.data.refresh);
+      SecureStore.setItem('username', user.username);
       axios.defaults.headers.common.Authorization = `Bearer ${res.data.access}`;
       setUserToken(true);
     }).catch((err) => {
@@ -80,7 +84,15 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      signIn, signOut, createAccount, setUserToken, userToken, setError, error, setIsSignout,
+      signIn,
+      signOut,
+      createAccount,
+      setUserToken,
+      userToken,
+      setError,
+      error,
+      setIsSignout,
+      username,
     }}
     >
       {children}

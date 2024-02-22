@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
+import { useAuth } from '../config/AuthContext';
 
 const styles = StyleSheet.create({
   container: {
@@ -10,14 +11,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContents: 'center',
+    justifyContent: 'space-between',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    padding: 20,
   },
   button: {
     backgroundColor: 'black',
     borderRadius: 12,
     padding: 10,
-    margin: 5,
-    width: 250,
+    margin: 2,
+    width: 190,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -32,19 +37,27 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     padding: 10,
   },
+  image: {
+    justifyContent: 'center',
+    height: 500,
+    aspectRatio: 2 / 3,
+  },
 });
 
 export default function PlayScreen() {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [websocket, setWebSocket] = useState(null);
   const [channelId, setChannelId] = useState('');
+  const [message, setMessage] = useState('');
+  const { username } = useAuth();
 
   // Function to create WebSocket
   const createWebSocket = () => {
     if (channelId === '') return;
-    const ws = new WebSocket(`ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/low/`, {
+    const ws = new WebSocket(`ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/${username}/`, {
       onOpen: () => console.log('opened'),
-      shouldReconnect: () => true,
+      shouldReconnect: true,
+      timeout: 120,
     });
     // eslint-disable-next-line no-use-before-define
     ws.onmessage = handleWebSocketMessage;
@@ -60,6 +73,7 @@ export default function PlayScreen() {
   }, []);
 
   const handleWebSocketMessage = (e) => {
+    setMessage(e.data);
     const data = JSON.parse(e.data);
     console.log(data);
     if (data.type === 'connection_established' || data.type === 'progress') {
@@ -87,34 +101,42 @@ export default function PlayScreen() {
 
   // Function to reopen WebSocket
   const reopenWebSocket = () => {
+    if (channelId === '') return;
     createWebSocket();
   };
 
   return (
     <View style={styles.container}>
       {websocket !== null ? (
-        <View>
-          <TouchableWithoutFeedback title onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
-            <View style={styles.button}>
-              <Text style={styles.text}>
-                Like
-              </Text>
-            </View>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={() => sendChoice({ choice: 'Dislike', movieID: 'MOVIE_ID' })}>
-            <View style={styles.button}>
-              <Text style={styles.text}>
-                Dislike
-              </Text>
-            </View>
-          </TouchableWithoutFeedback>
+        <>
           <View>
             <Text>
               Waiting for a response:
               {' '}
               {isWaitingForResponse ? 'true' : 'false'}
             </Text>
+            <Text>{message}</Text>
           </View>
+          <View>
+            <Image style={styles.image} source={require('../assets/test.jpeg')} />
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableWithoutFeedback title onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
+              <View style={styles.button}>
+                <Text style={styles.text}>
+                  Like
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
+            <TouchableWithoutFeedback onPress={() => sendChoice({ choice: 'Dislike', movieID: 'MOVIE_ID' })}>
+              <View style={styles.button}>
+                <Text style={styles.text}>
+                  Dislike
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+
           <TouchableWithoutFeedback onPress={closeWebSocket}>
             <View style={styles.button}>
               <Text style={styles.text}>
@@ -122,7 +144,7 @@ export default function PlayScreen() {
               </Text>
             </View>
           </TouchableWithoutFeedback>
-        </View>
+        </>
       ) : (
         <>
           <Text>

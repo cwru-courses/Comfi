@@ -4,6 +4,7 @@ from asgiref.sync import async_to_sync
 
 class EchoConsumer(WebsocketConsumer):
     def connect(self):
+        self.user_name = self.scope['url_route']['kwargs']['user_name']
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.group_name = f"chat_{self.room_name}"
 
@@ -15,6 +16,14 @@ class EchoConsumer(WebsocketConsumer):
 
         # Accept the connection
         self.accept()
+
+        async_to_sync(self.channel_layer.group_send)(
+            self.group_name,
+            {
+                "type": "echo_message",
+                "message": f"{self.user_name} has joined",
+            }
+        )
 
     def disconnect(self, code):
         # Leave the group

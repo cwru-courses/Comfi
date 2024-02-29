@@ -23,6 +23,9 @@ class Movies(models.Model):
     title = models.CharField(max_length=200)
     movieID = models.CharField(max_length=63)
     media_type = models.CharField(max_length=30)
+    release_year = models.IntegerField()
+    runtime = model.IntegerField()
+    genres_array = models.TextField(blank=True)
     poster_url = models.URLField(max_length=255)
-
+    
 

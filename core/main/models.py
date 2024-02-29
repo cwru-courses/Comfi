@@ -21,11 +21,11 @@ class Interest(models.Model):
     
 class Movies(models.Model):
     title = models.CharField(max_length=200)
-    movieID = models.CharField(max_length=63)
-    media_type = models.CharField(max_length=30)
-    release_year = models.IntegerField()
-    runtime = model.IntegerField()
-    genres_array = models.TextField(blank=True)  
+    movieID = models.CharField(max_length=200)
+    media_type = models.CharField(max_length=200)
+    release_year = models.CharField(max_length=200)
+    runtime = models.CharField(max_length=200)
+    genres_array = models.CharField(max_length=200)
 
 
 class PastSession(models.Model):

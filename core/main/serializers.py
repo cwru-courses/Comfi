@@ -1,5 +1,5 @@
 from rest_framework  import serializers
-from .models import CustomUser, Interest, PastSession, SessionParticipant
+from .models import CustomUser, Interest, PastSession, SessionParticipant, Movies
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -26,3 +26,8 @@ class SessionParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = SessionParticipant
         fields = ('user', 'session')
+
+class MovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movies
+        fields = ()

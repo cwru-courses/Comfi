@@ -1,1 +1,1 @@
-export const ENDPOINT_BASE_URL = '172.20.3.165'; // change to your ip here 
+export const ENDPOINT_BASE_URL = '172.20.157.185'; // change to your ip here 

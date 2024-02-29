@@ -20,4 +20,4 @@ class InterestSerializer(serializers.ModelSerializer):
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movies
-        fields = ()
+        fields = ('title', 'movieID', 'media_type')

@@ -33,23 +33,23 @@ class Command(BaseCommand):
                     # Map headers to model fields and store data in the dictionary
                     #Title
                     if header == 'primaryTitle':
-                        data_dict['title'] = str(value)
+                        data_dict['title'] = value
 
                     #Movie ID
                     elif header == 'tconst':
-                        data_dict['movieID'] = str(value)
+                        data_dict['movieID'] = value
 
                     #Media Type
                     elif header == 'titleType':
-                        data_dict['media_type'] = str(value)
+                        data_dict['media_type'] = value
 
                     #Release Year
                     elif header == 'startYear':
-                        data_dict['release_year'] = str(value)
+                        data_dict['release_year'] = value
                     
                     #Runtime/length (in minutes)
                     elif header == 'runtimeMinutes':
-                        data_dict['runtime'] = str(value)
+                        data_dict['runtime'] = value
                     
                     #Genres (up to 3 in array fashion, WIP)
                     elif header == 'genres':

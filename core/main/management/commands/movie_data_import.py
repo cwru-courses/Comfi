@@ -53,7 +53,7 @@ class Command(BaseCommand):
                     
                     #Genres (up to 3 in array fashion, WIP)
                     elif header == 'genres':
-                        data_dict['genres_array'] = str(value)
+                        data_dict['genres_array'] = value
 
 
                 parsed_movie_data.append(data_dict)

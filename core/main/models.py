@@ -19,3 +19,10 @@ class Interest(models.Model):
     def __str__(self):
         return self.movieID
     
+class Movies(models.Model):
+    title = models.CharField(max_length=200)
+    movieID = models.CharField(max_length=63)
+    media_type = models.CharField(max_length=30)
+    poster_url = models.URLField(max_length=255)
+
+

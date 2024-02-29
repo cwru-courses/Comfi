@@ -24,7 +24,7 @@ async function checkAuthentication() {
 }
 
 /*
- * When access token is invalid, the refresh token locally stored is checked.
+ * When access token is invalid, the locally stored refresh token is checked.
  * If the refresh token is valid, then new access and refresh tokens are set
  * and returns true.
  * If the refresh token is invalid, then the user must sign in again and

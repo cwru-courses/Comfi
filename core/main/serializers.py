@@ -15,4 +15,4 @@ class UserSerializer(serializers.ModelSerializer):
 class InterestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interest
-        fields = ('id', 'movieID', 'like', 'timesViewed')
+        fields = ('user', 'movieID', 'like', 'timesViewed')

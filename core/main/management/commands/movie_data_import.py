@@ -55,9 +55,6 @@ class Command(BaseCommand):
                     elif header == 'genres':
                         data_dict['genres_array'] = value
 
-                    #Poster URLS (WIP)
-                    #elif header == 'your_header_name':
-                        #data_dict['your_model_field_name'] = value
 
                 parsed_movie_data.append(**data_dict)
 

@@ -53,7 +53,6 @@ class Command(BaseCommand):
                     
                     #Genres (up to 3 in array fashion, WIP)
                     elif header == 'genres':
-                        instance_input = Movies()
                         data_dict['genres_array'] = value
 
                     #Poster URLS (WIP)

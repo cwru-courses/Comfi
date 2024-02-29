@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableWithoutFeedback, ScrollView, Image, StatusBar
 } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 
@@ -82,7 +81,7 @@ const styles = StyleSheet.create({
     paddingTop: 55,
     padding: 5
 
-  }
+  },
 });
 
 
@@ -94,8 +93,6 @@ export default function HomeScreen({ route }) {
   // Could log errors when calling backend, except for login or logout.
   useEffect(() => {
     if (!isAuthenticated) {
-      // eslint-disable-next-line no-use-before-define
-      // checkAuthentication(refreshToken);
       axios.get(
         `http://${ENDPOINT_BASE_URL}:8000/home/`,
         { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
@@ -107,19 +104,6 @@ export default function HomeScreen({ route }) {
       setIsAuthenticated(true);
     }
   }, [isAuthenticated]);
-
-  const handleSignoutPress = async () => {
-    axios.post(
-      `http://${ENDPOINT_BASE_URL}:8000/logout/`,
-      { refresh_token: SecureStore.getItem('refresh_token') },
-      { headers: { 'Content-Type': 'application/json' }, withCredentials: true },
-    ).then(() => {
-      SecureStore.deleteItemAsync('access_token');
-      SecureStore.deleteItemAsync('refresh_token');
-      axios.defaults.headers.common.Authorization = undefined;
-      setUserToken(null);
-    }).catch((err) => console.log(err));
-  };
 
   return (
     <View style = {styles.page}>

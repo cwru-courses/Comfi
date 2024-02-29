@@ -1,9 +1,9 @@
 import {View, Dimensions, Image} from 'react-native';
 import Swiper from 'react-native-swiper';
 
-const Gallery = ({ images }) => {
+const Gallery = ({ images, video }) => {
     return (
-    <Swiper style={styles.wrapper} showsButtons={false}>
+    <Swiper style={styles.wrapper} showsButtons={true}>
         {images.map((image, index) => (
             <View style={styles.slide} key={index}>
                 <Image style={styles.image} source={{ uri:image }} />
@@ -22,8 +22,8 @@ const Gallery = ({ images }) => {
           backgroundColor: 'transparent',
         },
         image: {
-          width,
-          flex: 1,
-        },
+          width: 500,
+          height: 500,
+        }
       };
     export default Gallery;

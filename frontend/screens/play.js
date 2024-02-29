@@ -1,34 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, TouchableOpacity
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
 
+    
 const styles = StyleSheet.create({
-  container: {
-    paddingTop: '15%',
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+   container: {
+    flex: 1
   },
   buttonContainer: {
     flexDirection: 'row',
-    padding: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 200,
+    paddingHorizontal: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50
   },
   button: {
-    backgroundColor: 'black',
-    borderRadius: 12,
-    padding: 10,
-    margin: 2,
-    width: 190,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    elevation: 20,
+    backgroundColor: 'white',
+    marginHorizontal: 15,
+    marginBottom: 200
   },
-  text: {
-    color: '#fff',
+   text: {
+    textAlign: 'center',
     fontSize: 16,
+    lineHeight: 21,
+    fontWeight: 'bold',
+    letterSpacing: 0.25,
+    color: 'gray',
   },
   input: {
     height: 40,
@@ -36,13 +45,9 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1.5,
     padding: 10,
-  },
-  image: {
-    justifyContent: 'center',
-    height: 500,
-    aspectRatio: 2 / 3,
-  },
+  }
 });
+
 
 export default function PlayScreen() {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
@@ -109,6 +114,25 @@ export default function PlayScreen() {
     <View style={styles.container}>
       {websocket !== null ? (
         <>
+        <Gallery images={images}/>
+        <Text style={styles.text}>Django Unchained</Text>
+        <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
+            <Image style={styles.image} source={require('./assets/previous.png')}/>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}
+          onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
+          <Image style={styles.image} source={require('./assets/Play.png')}/>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
+          <Image style={styles.image} source={require('./assets/next.png')}/>
+        </TouchableOpacity>
+      </View>
+    </View>
           <View>
             <Text>
               Waiting for a response:

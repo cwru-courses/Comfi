@@ -1,84 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, TouchableOpacity
+  TouchableWithoutFeedback, View, Text, StyleSheet,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
-import { useAuth } from '../config/AuthContext';
 
-    
 const styles = StyleSheet.create({
-   container: {
-    flex: 1
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  container: {
+    paddingTop: 30,
+    marginTop: 20,
+    flex: 1,
+    backgroundColor: '#fff',
     alignItems: 'center',
-    marginTop: 200,
-    paddingHorizontal: 20,
-    width: 100,
-    height: 100,
-    borderRadius: 50
+    justifyContents: 'center',
   },
   button: {
+    backgroundColor: 'black',
+    borderRadius: 12,
+    padding: 10,
+    margin: 5,
+    width: 250,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    elevation: 20,
-    backgroundColor: 'white',
-    marginHorizontal: 15,
-    marginBottom: 200
   },
-   text: {
-    textAlign: 'center',
+  text: {
+    color: '#fff',
     fontSize: 16,
-    lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'gray',
   },
-  input: {
-    height: 40,
-    width: 300,
-    margin: 10,
-    borderWidth: 1.5,
-    padding: 10,
-  }
 });
 
-
-export default function PlayScreen() {
+export default function Play() {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [websocket, setWebSocket] = useState(null);
-  const [channelId, setChannelId] = useState('');
-  const [message, setMessage] = useState('');
-  const { username } = useAuth();
+  const channelId = Math.floor(Math.random() * 10000);
 
   // Function to create WebSocket
   const createWebSocket = () => {
-    if (channelId === '') return;
-    const ws = new WebSocket(`ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/${username}/`, {
+    const ws = new WebSocket(`ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/low/`, {
       onOpen: () => console.log('opened'),
-      shouldReconnect: true,
-      timeout: 120,
+      shouldReconnect: () => true,
     });
-    // eslint-disable-next-line no-use-before-define
     ws.onmessage = handleWebSocketMessage;
     setWebSocket(ws);
   };
 
   // Create WebSocket on component mount
-  useEffect(() => () => {
-    if (websocket) {
-      websocket.close();
-      setWebSocket(null);
-    }
+  useEffect(() => {
+    createWebSocket();
+    return () => {
+      if (websocket) {
+        websocket.close();
+        setWebSocket(null);
+      }
+    };
   }, []);
 
   const handleWebSocketMessage = (e) => {
-    setMessage(e.data);
     const data = JSON.parse(e.data);
     console.log(data);
     if (data.type === 'connection_established' || data.type === 'progress') {
@@ -93,7 +69,7 @@ export default function PlayScreen() {
 
   const sendChoice = (userChoice) => {
     if (websocket) {
-      websocket.send(JSON.stringify({ type: 'client.choice', client_message: userChoice }));
+      websocket.send(JSON.stringify({ type: 'choice', client_message: userChoice }));
     }
   };
 
@@ -106,61 +82,35 @@ export default function PlayScreen() {
 
   // Function to reopen WebSocket
   const reopenWebSocket = () => {
-    if (channelId === '') return;
     createWebSocket();
   };
 
   return (
     <View style={styles.container}>
+      <Text>Django Channel Test</Text>
       {websocket !== null ? (
-        <>
-        <Gallery images={images}/>
-        <Text style={styles.text}>Django Unchained</Text>
-        <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
-            <Image style={styles.image} source={require('./assets/previous.png')}/>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button}
-          onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
-          <Image style={styles.image} source={require('./assets/Play.png')}/>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
-          <Image style={styles.image} source={require('./assets/next.png')}/>
-        </TouchableOpacity>
-      </View>
-    </View>
+        <View>
+          <TouchableWithoutFeedback title onPress={() => sendChoice('Like')}>
+            <View style={styles.button}>
+              <Text style={styles.text}>
+                Like
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={() => sendChoice('Dislike')}>
+            <View style={styles.button}>
+              <Text style={styles.text}>
+                Dislike
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
           <View>
             <Text>
               Waiting for a response:
               {' '}
               {isWaitingForResponse ? 'true' : 'false'}
             </Text>
-            <Text>{message}</Text>
           </View>
-          <View>
-            <Image style={styles.image} source={require('../assets/test.jpeg')} />
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableWithoutFeedback title onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Like
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback onPress={() => sendChoice({ choice: 'Dislike', movieID: 'MOVIE_ID' })}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Dislike
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-
           <TouchableWithoutFeedback onPress={closeWebSocket}>
             <View style={styles.button}>
               <Text style={styles.text}>
@@ -168,13 +118,12 @@ export default function PlayScreen() {
               </Text>
             </View>
           </TouchableWithoutFeedback>
-        </>
+        </View>
       ) : (
         <>
           <Text>
-            Create/Join Group
+            THE CONNECTION IS CLOSED
           </Text>
-          <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
           <TouchableWithoutFeedback onPress={reopenWebSocket}>
             <View style={styles.button}>
               <Text style={styles.text}>

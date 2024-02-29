@@ -23,7 +23,9 @@ function Root() {
   const { userToken } = useAuth();
   return (
     <NavigationContainer>
+
       <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: '#d81159' }}>
+
         {!userToken ? (
           <Tab.Screen
             name="Login"

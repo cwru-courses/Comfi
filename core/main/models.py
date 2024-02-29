@@ -27,6 +27,9 @@ class Movies(models.Model):
     runtime = models.CharField(max_length=200)
     genres_array = models.CharField(max_length=200)
 
+    def __str__(self):
+        return self.title
+
 
 class PastSession(models.Model):
     sessionID = models.AutoField(primary_key=True)

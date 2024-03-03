@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, ScrollView
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
@@ -49,6 +49,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 500,
     aspectRatio: 2 / 3,
+  },
+  page: {
+    flex: 1,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    paddingTop: 55,
+    padding: 5,
+
   },
 });
 
@@ -120,10 +128,11 @@ export default function PlayScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={styles.page}>
+      <ScrollView>
       {websocket !== null ? (
         <>
-          <View>
+          <View style = {styles.container}>
             <Text>
               Waiting for a response:
               {' '}
@@ -139,13 +148,13 @@ export default function PlayScreen() {
               <Text style={styles.text}>Django Unchained</Text>
               <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Previous', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./Comfi/assets/previous.png')}/>
+                <Image style={styles.image} source={require('../assets/previous.png')}/>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button) onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./Comfi/assets/play_button.png')}/>
+              <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
+                <Image style={styles.image} source={require('../assets/play_button.png')}/>
               </TouchableOpacity>
               <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Next', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./Comfi/assets/next.png')}/>
+                <Image style={styles.image} source={require('../assets/next.png')}/>
               </TouchableOpacity>
             </View>
           </View>
@@ -173,6 +182,7 @@ export default function PlayScreen() {
           </TouchableWithoutFeedback>
         </>
       )}
+      </ScrollView>
     </View>
   );
 }

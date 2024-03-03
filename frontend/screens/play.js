@@ -139,13 +139,13 @@ export default function PlayScreen() {
               <Text style={styles.text}>Django Unchained</Text>
               <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Previous', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./comphy/assets/previous.png')}/>
+                <Image style={styles.image} source={require('./Comfi/assets/previous.png')}/>
               </TouchableOpacity>
               <TouchableOpacity style={styles.button) onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./comphy/assets/play_button.png')}/>
+                <Image style={styles.image} source={require('./Comfi/assets/play_button.png')}/>
               </TouchableOpacity>
               <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Next', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./comphy/assets/next.png')}/>
+                <Image style={styles.image} source={require('./Comfi/assets/next.png')}/>
               </TouchableOpacity>
             </View>
           </View>

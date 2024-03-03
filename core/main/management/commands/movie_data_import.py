@@ -70,8 +70,10 @@ class Command(BaseCommand):
         for item in data:
             if 'adult' in item:
                 continue
-            if (item['media_type'] != "movie"):
-                continue
+            # Only allow movies
+            if 'genres_array' in item:
+                if (item['media_type'] != "movie"):
+                    continue
             # Convert array data to JSON before saving
             if 'genres_array' in item:
                 item['genres_array'] = json.dumps(item['genres_array'])

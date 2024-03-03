@@ -25,6 +25,7 @@ class Command(BaseCommand):
 
             for row in reader:
                 data_dict = {}
+                dirty = False
 
                 for header, value in zip(headers, row):
                     if value == '\\N':
@@ -51,9 +52,14 @@ class Command(BaseCommand):
                     elif header == 'runtimeMinutes':
                         data_dict['runtime'] = value
                     
-                    #Genres (up to 3 in array fashion, WIP)
+                    #Genres (up to 3 in array fashion)
                     elif header == 'genres':
                         data_dict['genres_array'] = value
+                    
+                    #Adult content begone
+                    elif header == 'isAdult':
+                        if value == True:
+                            data_dict['adult'] = "skip"
 
 
                 parsed_movie_data.append(data_dict)
@@ -62,7 +68,9 @@ class Command(BaseCommand):
     
     def save_parsed_data(self, data):
         for item in data:
-            if item['media_type'] != "movie":
+            if 'adult' in item:
+                continue
+            if (item['media_type'] != "movie"):
                 continue
             # Convert array data to JSON before saving
             if 'genres_array' in item:

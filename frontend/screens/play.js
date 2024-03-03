@@ -31,6 +31,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     marginBottom: 200,
   },
+  imagebutton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    elevation: 20,
+    backgroundColor: 'white',
+    marginHorizontal: 15,
+    marginBottom: 200,
+  },
   text: {
     textAlign: 'center',
     fontSize: 16,
@@ -49,6 +60,11 @@ const styles = StyleSheet.create({
   image: {
     justifyContent: 'center',
     height: 500,
+    aspectRatio: 2 / 3,
+  },
+  imageforbutton: {
+    justifyContent: 'center',
+    height: 50,
     aspectRatio: 2 / 3,
   },
   page: {
@@ -147,18 +163,19 @@ export default function PlayScreen() {
             <View style={styles.container}>
               <Gallery images={images} />
               <Text style={styles.text}>Django Unchained</Text>
+              </View>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
-                  <Image style={styles.image} source={require('../assets/previous.png')} />
+                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
+                  <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
-                  <Image style={styles.image} source={require('../assets/play_button.png')} />
+                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
+                  <Image style={styles.imageforbutton} source={require('../assets/play_button.png')} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
-                  <Image style={styles.image} source={require('../assets/next.png')} />
+                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
+                  <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
                 </TouchableOpacity>
               </View>
-            </View>
+            
 
             <TouchableWithoutFeedback onPress={closeWebSocket}>
               <View style={styles.button}>

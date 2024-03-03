@@ -17,13 +17,16 @@ const Gallery = ({ images, video }) => {
         wrapper: {},
         slide: {
           flex: 1,
+          padding: 20,
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: 'transparent',
         },
         image: {
-          width: 500,
+          padding: 10,
+          justifyContent: 'center',
           height: 500,
+          aspectRatio: 2 / 3,
         }
       };
     export default Gallery;

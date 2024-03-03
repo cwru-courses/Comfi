@@ -9,13 +9,14 @@ import Gallery from './Gallery';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // padding: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 200,
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     elevation: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'lightgrey',
     marginHorizontal: 15,
     marginBottom: 200,
   },
@@ -140,8 +141,11 @@ export default function PlayScreen() {
 
   // images stores the gallery pictures
   const images = [
-    './comphy/assets/DjangoUnchained.jpg',
-    'https://picsum.photos/20/20',
+    // '../assets/DjangoUnchainedReviews.png', 
+    'https://picsum.photos/20/30',
+    'https://picsum.photos/200/300',
+    'https://picsum.photos/2000/3000',
+    'https://picsum.photos/20000/30000',
   ];
 
   return (
@@ -162,8 +166,8 @@ export default function PlayScreen() {
             </View>
             <View style={styles.container}>
               <Gallery images={images} />
-              <Text style={styles.text}>Django Unchained</Text>
-              </View>
+              {/* <Text style={styles.text}>Django Unchained</Text> */}
+              
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
                   <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
@@ -175,6 +179,7 @@ export default function PlayScreen() {
                   <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
                 </TouchableOpacity>
               </View>
+            </View>
             
 
             <TouchableWithoutFeedback onPress={closeWebSocket}>

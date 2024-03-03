@@ -62,6 +62,8 @@ class Command(BaseCommand):
     
     def save_parsed_data(self, data):
         for item in data:
+            if item['media_type'] != "movie":
+                continue
             # Convert array data to JSON before saving
             if 'genres_array' in item:
                 item['genres_array'] = json.dumps(item['genres_array'])

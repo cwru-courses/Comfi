@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     padding: 5,
     width: '0.9rem',
     height: '0.9rem',
@@ -27,18 +27,35 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
   },
+  userData: {
+    flexDirection: 'row',
+    paddingTop: 100,
+  },
+  userText: {
+    color: '#fff',
+    fontSize: 24,
+  },
 });
 
 export default function UserScreen() {
-  const { setIsSignout, signOut } = useAuth();
+  const {
+    setIsSignout, signOut, getFirstName, getLastName,
+  } = useAuth();
+  const firstName = getFirstName();
+  const lastName = getLastName();
 
   const handleSignoutPress = async () => {
     setIsSignout(true);
     signOut();
   };
 
+  const capitalize = (name) => name.charAt(0).toUpperCase() + name.slice(1);
+
   return (
     <View style={styles.container}>
+      <View style={styles.userData}>
+        <Text style={styles.userText}>{`${capitalize(firstName)} ${capitalize(lastName)}`}</Text>
+      </View>
       <TouchableWithoutFeedback onPress={handleSignoutPress}>
         <View style={styles.button}>
           <Text style={styles.text}>

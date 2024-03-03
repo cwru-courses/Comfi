@@ -10,6 +10,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const username = SecureStore.getItem('username');
+  const [userData, setUserData] = useState(null);
   const [userToken, setUserToken] = useState(false);
   const [error, setError] = useState('');
   const [isSignout, setIsSignout] = useState(false);
@@ -28,6 +29,11 @@ export function AuthProvider({ children }) {
     if (!isSignout) {
       getUserToken();
     }
+    axios.get(`http://${ENDPOINT_BASE_URL}:8000/api/users/?username=${username}`)
+      .then((res) => {
+        setUserData(res.data[0]);
+        console.log(res.data[0]);
+      }).catch((err) => console.log(err));
   }, []);
 
   const signIn = (user) => {
@@ -82,6 +88,10 @@ export function AuthProvider({ children }) {
     });
   };
 
+  const getFirstName = () => (userData ? userData.first_name : null);
+
+  const getLastName = () => (userData ? userData.last_name : null);
+
   return (
     <AuthContext.Provider value={{
       signIn,
@@ -93,6 +103,8 @@ export function AuthProvider({ children }) {
       error,
       setIsSignout,
       username,
+      getFirstName,
+      getLastName,
     }}
     >
       {children}

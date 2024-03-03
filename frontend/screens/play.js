@@ -141,11 +141,12 @@ export default function PlayScreen() {
 
   // images stores the gallery pictures
   const images = [
-    // '../assets/DjangoUnchainedReviews.png', 
+    // '../assets/DjangoUnchainedReviews.png',
+    'https://www.gamespot.com/a/uploads/original/1597/15976769/4097300-download%2826%29.jpg', 
     'https://picsum.photos/20/30',
     'https://picsum.photos/200/300',
     'https://picsum.photos/2000/3000',
-    'https://picsum.photos/20000/30000',
+    // 'https://picsum.photos/20000/30000',
   ];
 
   return (
@@ -153,17 +154,17 @@ export default function PlayScreen() {
       <ScrollView>
         {websocket !== null ? (
           <>
-            <View style={styles.container}>
+            {/* <View style={styles.container}>
               <Text>
                 Waiting for a response:
                 {' '}
                 {isWaitingForResponse ? 'true' : 'false'}
               </Text>
               <Text>{message}</Text>
-            </View>
-            <View>
+            </View> */}
+            {/* <View>
               <Image style={styles.image} source={require('../assets/test.jpeg')} />
-            </View>
+            </View> */}
             <View style={styles.container}>
               <Gallery images={images} />
               {/* <Text style={styles.text}>Django Unchained</Text> */}

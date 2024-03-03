@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, TouchableOpacity,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
+import Gallery from './Gallery';
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -17,7 +18,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     width: 100,
     height: 100,
-    borderRadius: 50
+    borderRadius: 50,
   },
   button: {
     alignItems: 'center',
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
     elevation: 20,
     backgroundColor: 'white',
     marginHorizontal: 15,
-    marginBottom: 200
+    marginBottom: 200,
   },
   text: {
     textAlign: 'center',
@@ -113,7 +114,7 @@ export default function PlayScreen() {
     createWebSocket();
   };
 
-  //images stores the gallery pictures
+  // images stores the gallery pictures
   const images = [
     './comphy/assets/DjangoUnchained.jpg',
     'https://picsum.photos/20/20',
@@ -134,18 +135,18 @@ export default function PlayScreen() {
           <View>
             <Image style={styles.image} source={require('../assets/test.jpeg')} />
           </View>
-            <View style={styles.container}>
-              <Gallery images={images}/>
-              <Text style={styles.text}>Django Unchained</Text>
-              <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Previous', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./Comfi/assets/previous.png')}/>
+          <View style={styles.container}>
+            <Gallery images={images} />
+            <Text style={styles.text}>Django Unchained</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
+                <Image style={styles.image} source={require('../assets/previous.png')} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button) onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./Comfi/assets/play_button.png')}/>
+              <TouchableOpacity style={styles.button} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
+                <Image style={styles.image} source={require('../assets/play_button.png')} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Next', movieID: 'MOVIE_ID'})}>
-                <Image style={styles.image} source={require('./Comfi/assets/next.png')}/>
+              <TouchableOpacity style={styles.button} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
+                <Image style={styles.image} source={require('../assets/next.png')} />
               </TouchableOpacity>
             </View>
           </View>

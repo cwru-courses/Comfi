@@ -7,28 +7,36 @@ import { useAuth } from '../config/AuthContext';
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: '15%',
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flex: 1
   },
   buttonContainer: {
     flexDirection: 'row',
-    padding: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 200,
+    paddingHorizontal: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50
   },
   button: {
-    backgroundColor: 'black',
-    borderRadius: 12,
-    padding: 10,
-    margin: 2,
-    width: 190,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    elevation: 20,
+    backgroundColor: 'white',
+    marginHorizontal: 15,
+    marginBottom: 200
   },
   text: {
-    color: '#fff',
+    textAlign: 'center',
     fontSize: 16,
+    lineHeight: 21,
+    fontWeight: 'bold',
+    letterSpacing: 0.25,
+    color: 'gray',
   },
   input: {
     height: 40,
@@ -105,6 +113,12 @@ export default function PlayScreen() {
     createWebSocket();
   };
 
+  //images stores the gallery pictures
+  const images = [
+    './comphy/assets/DjangoUnchained.jpg',
+    'https://picsum.photos/20/20',
+  ];
+
   return (
     <View style={styles.container}>
       {websocket !== null ? (
@@ -120,21 +134,20 @@ export default function PlayScreen() {
           <View>
             <Image style={styles.image} source={require('../assets/test.jpeg')} />
           </View>
-          <View style={styles.buttonContainer}>
-            <TouchableWithoutFeedback title onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Like
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback onPress={() => sendChoice({ choice: 'Dislike', movieID: 'MOVIE_ID' })}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Dislike
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
+            <View style={styles.container}>
+              <Gallery images={images}/>
+              <Text style={styles.text}>Django Unchained</Text>
+              <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Previous', movieID: 'MOVIE_ID'})}>
+                <Image style={styles.image} source={require('./comphy/assets/previous.png')}/>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button) onPress={() => sendChoice({choice: 'Like', movieID: 'MOVIE_ID'})}>
+                <Image style={styles.image} source={require('./comphy/assets/play_button.png')}/>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={() => sendChoice({choice: 'Next', movieID: 'MOVIE_ID'})}>
+                <Image style={styles.image} source={require('./comphy/assets/next.png')}/>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <TouchableWithoutFeedback onPress={closeWebSocket}>

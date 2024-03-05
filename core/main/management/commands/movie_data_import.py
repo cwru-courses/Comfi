@@ -71,7 +71,7 @@ class Command(BaseCommand):
             if 'adult' in item:
                 continue
             # Only allow movies
-            if 'genres_array' in item:
+            if 'media_type' in item:
                 if (item['media_type'] != "movie"):
                     continue
             # Convert array data to JSON before saving

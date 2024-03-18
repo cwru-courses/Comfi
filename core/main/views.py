@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegistrationSerializer, UserSerializer, InterestSerializer
-from .models import CustomUser, Interest
+from .serializers import UserRegistrationSerializer, UserSerializer, InterestSerializer, PastSessionSerializer, SessionParticipantSerializer
+from .models import CustomUser, Interest, PastSession, SessionParticipant
 
 # Create your views here.
 class HomeView(APIView):
@@ -67,3 +67,11 @@ class UserView(viewsets.ModelViewSet):
 class InterestView(viewsets.ModelViewSet):
     serializer_class = InterestSerializer
     queryset = Interest.objects.all()
+
+class PastSessionView(viewsets.ModelViewSet):
+    serializer_class = PastSessionSerializer
+    queryset = PastSession.objects.all()
+
+class SessionParticipantView(viewsets.ModelViewSet):
+    serializer_class = SessionParticipantSerializer
+    queryset = SessionParticipant.objects.all()

@@ -23,7 +23,7 @@ class PastSession(models.Model):
     sessionID = models.AutoField(primary_key=True)
     roomName = models.CharField(max_length=63)
     startTime = models.DateTimeField()
-    endTime = models.DateTimeField()
+    endTime = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.sessionID} | {self.roomName}'

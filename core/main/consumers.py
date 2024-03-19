@@ -1,6 +1,9 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+from .models import PastSession, SessionParticipant
 
 class EchoConsumer(WebsocketConsumer):
     def connect(self):
@@ -17,6 +20,10 @@ class EchoConsumer(WebsocketConsumer):
         # Accept the connection
         self.accept()
 
+        # Add user to new session
+        session = self.get_create_new_session(self.room_name)
+        self.add_participant_to_session(session, self.user_name)
+
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
             {
@@ -31,6 +38,8 @@ class EchoConsumer(WebsocketConsumer):
             self.group_name,
             self.channel_name
         )
+        session = self.get_create_new_session(self.room_name)
+        self.update_session_end_time(session)
 
     def receive(self, text_data):
         # Parse the JSON message
@@ -53,3 +62,22 @@ class EchoConsumer(WebsocketConsumer):
         # Receive the message from the group and send it back to the sender
         message = event["message"]
         self.send(text_data=json.dumps(message))
+
+    def get_create_new_session(self, room_name):
+        try:
+            # Update existing session for all users in room
+            session = PastSession.objects.get(roomName=room_name, endTime__isnull=True)
+        except PastSession.DoesNotExist:
+            # If no session exists, create a new session
+            session = PastSession.objects.create(roomName=room_name, startTime=timezone.now())
+        return session
+
+    def add_participant_to_session(self, session, username):
+        User = get_user_model()
+        user = User.objects.get(username=username)
+        participant = SessionParticipant.objects.create(session=session, user=user)
+        return participant
+    
+    def update_session_end_time(self, session):
+        session.end_time = timezone.now()
+        session.save()

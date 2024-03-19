@@ -1,6 +1,7 @@
+import asyncio
 import json
 from channels.generic.websocket import WebsocketConsumer
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import PastSession, SessionParticipant
@@ -31,6 +32,7 @@ class EchoConsumer(WebsocketConsumer):
                 "message": f"{self.user_name} has joined",
             }
         )
+        #self.periodic_send_data_task = asyncio.run(self.periodic_send_data())
 
     def disconnect(self, code):
         # Leave the group
@@ -40,6 +42,7 @@ class EchoConsumer(WebsocketConsumer):
         )
         session = self.get_create_new_session(self.room_name)
         self.update_session_end_time(session)
+        self.periodic_send_data_task.cancel()
 
     def receive(self, text_data):
         # Parse the JSON message
@@ -58,11 +61,6 @@ class EchoConsumer(WebsocketConsumer):
             }
         )
 
-    def echo_message(self, event):
-        # Receive the message from the group and send it back to the sender
-        message = event["message"]
-        self.send(text_data=json.dumps(message))
-
     def get_create_new_session(self, room_name):
         try:
             # Update existing session for all users in room
@@ -79,5 +77,49 @@ class EchoConsumer(WebsocketConsumer):
         return participant
     
     def update_session_end_time(self, session):
-        session.end_time = timezone.now()
+        session.endTime = timezone.now()
         session.save()
+
+    def echo_message(self, event):
+        # Receive the message from the group and send it back to the sender
+        message = event["message"]
+        self.send(text_data=json.dumps(message))
+
+    async def periodic_send_data(self):
+        try:
+            while True:
+                # Retrieve data for each user in the session
+                data_for_users = self.get_recommended_list()
+                
+                # Send data to all users in the room
+                self.send_recommendations_to_users(data_for_users)
+
+                # Wait for some time before sending data again (e.g., every 5 seconds)
+                await asyncio.sleep(5)
+        except asyncio.CancelledError:
+            pass
+
+    @sync_to_async
+    def get_recommended_list(self):
+        session = self.get_create_new_session(self.room_name)
+        recommendations = {}
+        participants = SessionParticipant.objects.filter(session=session)
+        for participant in participants:
+            user_data = {'username': participant.user.username, 'recommendations': {'movieID1', 'movieID2', 'movieID3'}}
+            recommendations[participant.user.username] = user_data
+        return recommendations
+
+    @sync_to_async
+    def send_recommendations_to_users(self, recommendation_list):
+        user = self.user_name
+        async_to_sync(self.channel_layer.send)(
+            user,
+            {
+                "type": "send.recommendations",
+                "data": recommendation_list
+            }
+        )
+
+    def send_recommendations(self, event):
+        data = event["data"]
+        self.send(text_data=json.dumps(data))

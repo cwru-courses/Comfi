@@ -8,7 +8,7 @@ import { ENDPOINT_BASE_URL } from '../config/constants';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'lightgrey',
+    backgroundColor: 'dimgrey',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
   },
   smallcontainer: {
     flex: 1,
-    backgroundColor: 'lightgrey',
+    backgroundColor: 'dimgrey',
     alignItems: 'right',
     justifyContent: 'right',
     textAlign: 'left',
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: 'black',
+    color: 'white',
     fontSize: 16,
     padding: 2,
     margin: 2,
@@ -44,7 +44,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   titletext: {
-    color: 'black',
+    color: 'white',
+    fontSize: 32,
+    padding: 2,
+    fontWeight: 'bold',
+    margin: 2,
+    textAlign: 'left',
+    flexDirection: 'column',
+    flexWrap: 'wrap',
+  },headertext: {
+    color: '#d81159',
     fontSize: 32,
     padding: 2,
     fontWeight: 'bold',
@@ -64,7 +73,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   profiletext: {
-    color: 'black',
+    color: 'white',
     fontSize: 20,
     padding: 2,
     margin: 2,
@@ -76,7 +85,7 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
     alignItems: 'center',
     paddingTop: 55,
     padding: 5,
@@ -128,7 +137,7 @@ export default function HomeScreen() {
         </Text>
       </View> */}
 
-        <Text style={styles.titletext}>Recent Groups</Text>
+        <Text style={styles.headertext}>Recent Groups</Text>
         {/* End Movie of the day */}
         {/* Profile */}
         <View style={styles.smallcontainer}>

@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     elevation: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'silver',
     marginHorizontal: 15,
     marginBottom: 200,
   },
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     elevation: 20,
-    backgroundColor: 'lightgrey',
+    backgroundColor: 'silver',
     marginHorizontal: 15,
     marginBottom: 200,
   },
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     fontWeight: 'bold',
     letterSpacing: 0.25,
-    color: 'gray',
+    color: 'dimgray',
   },
   input: {
     height: 40,
@@ -57,6 +57,10 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1.5,
     padding: 10,
+    // color: 'grey',
+    // shadowColor: 'grey',
+    borderColor: 'grey',
+    backgroundColor: 'white',
   },
   image: {
     justifyContent: 'center',
@@ -70,11 +74,21 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: 'black',
     alignItems: 'center',
     paddingTop: 55,
     padding: 5,
 
+  },
+  headertext: {
+    color: '#d81159',
+    fontSize: 32,
+    padding: 2,
+    fontWeight: 'bold',
+    margin: 2,
+    textAlign: 'left',
+    flexDirection: 'column',
+    flexWrap: 'wrap',
   },
 });
 
@@ -193,15 +207,18 @@ export default function PlayScreen() {
           </>
         ) : (
           <>
-            <Text>
+            <Text style={styles.headertext}>
               Create/Join Group
             </Text>
+            <View style={{padding: 60}}></View>
             <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
             <TouchableWithoutFeedback onPress={reopenWebSocket}>
+              <View style = {{alignSelf: 'center', padding:20}}>
               <View style={styles.button}>
                 <Text style={styles.text}>
                   Open New Connection
                 </Text>
+              </View>
               </View>
             </TouchableWithoutFeedback>
           </>

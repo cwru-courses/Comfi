@@ -45,3 +45,5 @@ core/core/__pycache__/
 #movie data
 
 core/ml-25m/
+core/ml-latest-small/
+core/ml-latest-small/

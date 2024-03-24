@@ -20,7 +20,7 @@ class InterestSerializer(serializers.ModelSerializer):
 class PastSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PastSession
-        fields = ('roomName', 'startTime', 'endTime')
+        fields = ('sessionID', 'roomName', 'startTime', 'endTime')
 
 class SessionParticipantSerializer(serializers.ModelSerializer):
     class Meta:

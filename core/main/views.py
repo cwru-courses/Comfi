@@ -62,7 +62,7 @@ class UserView(viewsets.ModelViewSet):
         username = self.request.query_params.get('username', None)
         if username:
             return CustomUser.objects.filter(username=username)
-        return CustomUser.objects.all()
+        return None
 
 class InterestView(viewsets.ModelViewSet):
     serializer_class = InterestSerializer
@@ -75,3 +75,8 @@ class PastSessionView(viewsets.ModelViewSet):
 class SessionParticipantView(viewsets.ModelViewSet):
     serializer_class = SessionParticipantSerializer
     queryset = SessionParticipant.objects.all()
+
+    def get_queryset(self):
+        username = self.request.query_params.get('username', None)
+        if username:
+            return PastSession.objects.filter(sessionparticipant__user__username=username).distinct()

@@ -23,6 +23,7 @@ from main import views
 router = routers.DefaultRouter()
 router.register(r'users', views.UserView, 'user')
 router.register(r'interests', views.InterestView, 'interest')
+router.register(r'pastSession', views.PastSessionView, 'past session')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

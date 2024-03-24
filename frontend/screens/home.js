@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Image, StatusBar,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { ENDPOINT_BASE_URL } from '../config/constants';
+import { useAuth } from '../config/AuthContext';
 
 const styles = StyleSheet.create({
   container: {
@@ -52,7 +54,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     flexDirection: 'column',
     flexWrap: 'wrap',
-  },headertext: {
+  },
+  headertext: {
     color: '#d81159',
     fontSize: 32,
     padding: 2,
@@ -95,6 +98,8 @@ const styles = StyleSheet.create({
 
 export default function HomeScreen() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { username } = useAuth();
+  const [pastSessions, setPastSessions] = useState(null);
 
   // Could log errors when calling backend, except for login or logout.
   useEffect(() => {
@@ -110,6 +115,22 @@ export default function HomeScreen() {
       setIsAuthenticated(true);
     }
   }, [isAuthenticated]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getPreviousSessions();
+    }, []),
+  );
+
+  const getPreviousSessions = () => {
+    axios.get(`http://${ENDPOINT_BASE_URL}:8000/api/pastSession?username=${username}`)
+      .then((res) => {
+        if (res.status === 200) {
+          console.log(res.data);
+          setPastSessions(res.data);
+        }
+      }).catch((err) => console.log(err));
+  };
 
   return (
     <View style={styles.page}>
@@ -129,77 +150,25 @@ export default function HomeScreen() {
               style={{ width: 300, height: 300 }}
             />
           </View>
-
         </View>
-        {/* <View>
-        <Text>
-          {message}
-        </Text>
-      </View> */}
-
-        <Text style={styles.headertext}>Recent Groups</Text>
-        {/* End Movie of the day */}
-        {/* Profile */}
-        <View style={styles.smallcontainer}>
-
-          <Image
-            source={{ uri: 'https://picsum.photos/50' }}
-            style={{
-              width: 50, height: 50, borderRadius: 100, padding: 5,
-            }}
-          />
-          <Text style={styles.profiletext}>Sample Name </Text>
-        </View>
-        {/* end profile */}
-        {/* Profile */}
-        <View style={styles.smallcontainer}>
-
-          <Image
-            source={{ uri: 'https://picsum.photos/50' }}
-            style={{
-              width: 50, height: 50, borderRadius: 100, padding: 5,
-            }}
-          />
-          <Text style={styles.profiletext}>Sample Name </Text>
-        </View>
-        {/* end profile */}
-        {/* Profile */}
-        <View style={styles.smallcontainer}>
-
-          <Image
-            source={{ uri: 'https://picsum.photos/50' }}
-            style={{
-              width: 50, height: 50, borderRadius: 100, padding: 5,
-            }}
-          />
-          <Text style={styles.profiletext}>Sample Name </Text>
-        </View>
-        {/* end profile */}
-        {/* Profile */}
-        <View style={styles.smallcontainer}>
-
-          <Image
-            source={{ uri: 'https://picsum.photos/50' }}
-            style={{
-              width: 50, height: 50, borderRadius: 100, padding: 5,
-            }}
-          />
-          <Text style={styles.profiletext}>Sample Name </Text>
-        </View>
-        {/* end profile */}
-        {/* Profile */}
-        <View style={styles.smallcontainer}>
-
-          <Image
-            source={{ uri: 'https://picsum.photos/50' }}
-            style={{
-              width: 50, height: 50, borderRadius: 100, padding: 5,
-            }}
-          />
-          <Text style={styles.profiletext}>Sample Name </Text>
-        </View>
-        {/* end profile */}
-
+        <Text style={styles.titletext}>Recent Groups</Text>
+        {
+          pastSessions ? (
+            pastSessions.map((session) => (
+              <View style={styles.smallcontainer} key={session.sessionID}>
+                <Image
+                  source={{ uri: 'https://picsum.photos/50' }}
+                  style={{
+                    width: 50, height: 50, borderRadius: 100, padding: 5,
+                  }}
+                />
+                <Text style={styles.profiletext}>{session.roomName}</Text>
+              </View>
+            ))
+          ) : (
+            <Text>Empty</Text>
+          )
+        }
       </ScrollView>
     </View>
   );

@@ -74,6 +74,12 @@ class Command(BaseCommand):
             if 'media_type' in item:
                 if (item['media_type'] != "movie"):
                     continue
+            if 'release_year' in item:
+                if (item['release_year'] <= 1940):
+                    continue
+            if 'runtime' in item:
+                if (item['runtime'] <= 30):
+                    continue
             # Convert array data to JSON before saving
             if 'genres_array' in item:
                 item['genres_array'] = json.dumps(item['genres_array'])

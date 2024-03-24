@@ -58,6 +58,12 @@ class UserView(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = CustomUser.objects.all()
 
+    def get_queryset(self):
+        username = self.request.query_params.get('username', None)
+        if username:
+            return CustomUser.objects.filter(username=username)
+        return CustomUser.objects.all()
+
 class InterestView(viewsets.ModelViewSet):
     serializer_class = InterestSerializer
     queryset = Interest.objects.all()

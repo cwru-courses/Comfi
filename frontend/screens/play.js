@@ -1,34 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
+import Gallery from './Gallery';
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: '15%',
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    // padding: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
-    padding: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 200,
+    // paddingHorizontal: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   button: {
-    backgroundColor: 'black',
-    borderRadius: 12,
-    padding: 10,
-    margin: 2,
-    width: 190,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    elevation: 20,
+    backgroundColor: 'silver',
+    marginHorizontal: 15,
+    marginBottom: 200,
+  },
+  imagebutton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    elevation: 20,
+    backgroundColor: 'silver',
+    marginHorizontal: 15,
+    marginBottom: 200,
   },
   text: {
-    color: '#fff',
+    textAlign: 'center',
     fontSize: 16,
+    lineHeight: 21,
+    fontWeight: 'bold',
+    letterSpacing: 0.25,
+    color: 'dimgray',
   },
   input: {
     height: 40,
@@ -36,11 +57,38 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1.5,
     padding: 10,
+    // color: 'grey',
+    // shadowColor: 'grey',
+    borderColor: 'grey',
+    backgroundColor: 'white',
   },
   image: {
     justifyContent: 'center',
     height: 500,
     aspectRatio: 2 / 3,
+  },
+  imageforbutton: {
+    justifyContent: 'center',
+    height: 50,
+    aspectRatio: 2 / 3,
+  },
+  page: {
+    flex: 1,
+    backgroundColor: 'black',
+    alignItems: 'center',
+    paddingTop: 55,
+    padding: 5,
+
+  },
+  headertext: {
+    color: '#d81159',
+    fontSize: 32,
+    padding: 2,
+    fontWeight: 'bold',
+    margin: 2,
+    textAlign: 'left',
+    flexDirection: 'column',
+    flexWrap: 'wrap',
   },
 });
 
@@ -105,61 +153,77 @@ export default function PlayScreen() {
     createWebSocket();
   };
 
-  return (
-    <View style={styles.container}>
-      {websocket !== null ? (
-        <>
-          <View>
-            <Text>
-              Waiting for a response:
-              {' '}
-              {isWaitingForResponse ? 'true' : 'false'}
-            </Text>
-            <Text>{message}</Text>
-          </View>
-          <View>
-            <Image style={styles.image} source={require('../assets/test.jpeg')} />
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableWithoutFeedback title onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Like
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-            <TouchableWithoutFeedback onPress={() => sendChoice({ choice: 'Dislike', movieID: 'MOVIE_ID' })}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Dislike
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
+  // images stores the gallery pictures
+  const images = [
+    // '../assets/DjangoUnchainedReviews.png',
+    'https://www.gamespot.com/a/uploads/original/1597/15976769/4097300-download%2826%29.jpg', 
+    'https://picsum.photos/20/30',
+    'https://picsum.photos/200/300',
+    'https://picsum.photos/2000/3000',
+    // 'https://picsum.photos/20000/30000',
+  ];
 
-          <TouchableWithoutFeedback onPress={closeWebSocket}>
-            <View style={styles.button}>
-              <Text style={styles.text}>
-                Close Connection
+  return (
+    <View style={styles.page}>
+      <ScrollView>
+        {websocket !== null ? (
+          <>
+            {/* <View style={styles.container}>
+              <Text>
+                Waiting for a response:
+                {' '}
+                {isWaitingForResponse ? 'true' : 'false'}
               </Text>
+              <Text>{message}</Text>
+            </View> */}
+            {/* <View>
+              <Image style={styles.image} source={require('../assets/test.jpeg')} />
+            </View> */}
+            <View style={styles.container}>
+              <Gallery images={images} />
+              {/* <Text style={styles.text}>Django Unchained</Text> */}
+              
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
+                  <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
+                  <Image style={styles.imageforbutton} source={require('../assets/play_button.png')} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
+                  <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
+                </TouchableOpacity>
+              </View>
             </View>
-          </TouchableWithoutFeedback>
-        </>
-      ) : (
-        <>
-          <Text>
-            Create/Join Group
-          </Text>
-          <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
-          <TouchableWithoutFeedback onPress={reopenWebSocket}>
-            <View style={styles.button}>
-              <Text style={styles.text}>
-                Open New Connection
-              </Text>
-            </View>
-          </TouchableWithoutFeedback>
-        </>
-      )}
+            
+
+            <TouchableWithoutFeedback onPress={closeWebSocket}>
+              <View style={styles.button}>
+                <Text style={styles.text}>
+                  Close Connection
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
+          </>
+        ) : (
+          <>
+            <Text style={styles.headertext}>
+              Create/Join Group
+            </Text>
+            <View style={{padding: 60}}></View>
+            <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
+            <TouchableWithoutFeedback onPress={reopenWebSocket}>
+              <View style = {{alignSelf: 'center', padding:20}}>
+              <View style={styles.button}>
+                <Text style={styles.text}>
+                  Open New Connection
+                </Text>
+              </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </>
+        )}
+      </ScrollView>
     </View>
   );
 }

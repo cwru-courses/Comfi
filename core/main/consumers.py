@@ -32,7 +32,6 @@ class EchoConsumer(WebsocketConsumer):
                 "message": f"{self.user_name} has joined",
             }
         )
-        #self.periodic_send_data_task = asyncio.run(self.periodic_send_data())
 
     def disconnect(self, code):
         # Leave the group
@@ -42,24 +41,20 @@ class EchoConsumer(WebsocketConsumer):
         )
         session = self.get_create_new_session(self.room_name)
         self.update_session_end_time(session)
-        self.periodic_send_data_task.cancel()
 
     def receive(self, text_data):
         # Parse the JSON message
         try:
             message = json.loads(text_data)
+            message_type = message.get("type")
         except json.JSONDecodeError:
             print("Invalid JSON data received")
             return
-
-        # Send the message to the group
-        async_to_sync(self.channel_layer.group_send)(
-            self.group_name,
-            {
-                "type": "echo_message",
-                "message": message,
-            }
-        )
+        
+        if message_type == 'client_choice':
+            self.process_user_choice(message)
+        if message_type == 'server_recommendations':
+            self.send_mock_recommendations()
 
     def get_create_new_session(self, room_name):
         try:
@@ -85,41 +80,32 @@ class EchoConsumer(WebsocketConsumer):
         message = event["message"]
         self.send(text_data=json.dumps(message))
 
-    async def periodic_send_data(self):
-        try:
-            while True:
-                # Retrieve data for each user in the session
-                data_for_users = self.get_recommended_list()
-                
-                # Send data to all users in the room
-                self.send_recommendations_to_users(data_for_users)
+    def process_user_choice(self, data):
+        choice = data.get('client_choice')
 
-                # Wait for some time before sending data again (e.g., every 5 seconds)
-                await asyncio.sleep(5)
-        except asyncio.CancelledError:
-            pass
-
-    @sync_to_async
-    def get_recommended_list(self):
-        session = self.get_create_new_session(self.room_name)
-        recommendations = {}
-        participants = SessionParticipant.objects.filter(session=session)
-        for participant in participants:
-            user_data = {'username': participant.user.username, 'recommendations': {'movieID1', 'movieID2', 'movieID3'}}
-            recommendations[participant.user.username] = user_data
-        return recommendations
-
-    @sync_to_async
-    def send_recommendations_to_users(self, recommendation_list):
-        user = self.user_name
-        async_to_sync(self.channel_layer.send)(
-            user,
+        # Send the message to the group
+        async_to_sync(self.channel_layer.group_send)(
+            self.group_name,
             {
-                "type": "send.recommendations",
-                "data": recommendation_list
+                "type": "echo_message",
+                "message": {
+                    "username": self.user_name,
+                    "choice": choice
+                },
             }
         )
+        # TODO: Update to add choice to Interest table
 
-    def send_recommendations(self, event):
-        data = event["data"]
-        self.send(text_data=json.dumps(data))
+    def generate_mock_recommendations(self):
+        mock_recommendations = [
+            {"title": "Recommendation 1", "Description": "Description 1"},
+            {"title": "Recommendation 2", "Description": "Description 2"},
+        ]
+        return mock_recommendations
+    
+    def send_mock_recommendations(self):
+        mock_recommendations = self.generate_mock_recommendations()
+        self.send(text_data=json.dumps({
+            "type": "recommendations",
+            "message": mock_recommendations
+        }))

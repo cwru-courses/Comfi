@@ -9,14 +9,12 @@ import Gallery from './Gallery';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // padding: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 200,
-    // paddingHorizontal: 20,
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -57,8 +55,6 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1.5,
     padding: 10,
-    // color: 'grey',
-    // shadowColor: 'grey',
     borderColor: 'grey',
     backgroundColor: 'white',
   },
@@ -136,7 +132,7 @@ export default function PlayScreen() {
 
   const sendChoice = (userChoice) => {
     if (websocket) {
-      websocket.send(JSON.stringify({ type: 'client.choice', client_message: userChoice }));
+      websocket.send(JSON.stringify({ type: 'client_choice', client_message: userChoice }));
     }
   };
 
@@ -156,7 +152,7 @@ export default function PlayScreen() {
   // images stores the gallery pictures
   const images = [
     // '../assets/DjangoUnchainedReviews.png',
-    'https://www.gamespot.com/a/uploads/original/1597/15976769/4097300-download%2826%29.jpg', 
+    'https://www.gamespot.com/a/uploads/original/1597/15976769/4097300-download%2826%29.jpg',
     'https://picsum.photos/20/30',
     'https://picsum.photos/200/300',
     'https://picsum.photos/2000/3000',
@@ -168,21 +164,9 @@ export default function PlayScreen() {
       <ScrollView>
         {websocket !== null ? (
           <>
-            {/* <View style={styles.container}>
-              <Text>
-                Waiting for a response:
-                {' '}
-                {isWaitingForResponse ? 'true' : 'false'}
-              </Text>
-              <Text>{message}</Text>
-            </View> */}
-            {/* <View>
-              <Image style={styles.image} source={require('../assets/test.jpeg')} />
-            </View> */}
             <View style={styles.container}>
               <Gallery images={images} />
-              {/* <Text style={styles.text}>Django Unchained</Text> */}
-              
+
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
                   <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
@@ -195,7 +179,6 @@ export default function PlayScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-            
 
             <TouchableWithoutFeedback onPress={closeWebSocket}>
               <View style={styles.button}>
@@ -210,15 +193,15 @@ export default function PlayScreen() {
             <Text style={styles.headertext}>
               Create/Join Group
             </Text>
-            <View style={{padding: 60}}></View>
+            <View style={{ padding: 60 }} />
             <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
             <TouchableWithoutFeedback onPress={reopenWebSocket}>
-              <View style = {{alignSelf: 'center', padding:20}}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Open New Connection
-                </Text>
-              </View>
+              <View style={{ alignSelf: 'center', padding: 20 }}>
+                <View style={styles.button}>
+                  <Text style={styles.text}>
+                    Open New Connection
+                  </Text>
+                </View>
               </View>
             </TouchableWithoutFeedback>
           </>

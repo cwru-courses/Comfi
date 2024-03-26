@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, TouchableOpacity,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
@@ -89,10 +89,11 @@ const styles = StyleSheet.create({
 });
 
 export default function PlayScreen() {
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [websocket, setWebSocket] = useState(null);
   const [channelId, setChannelId] = useState('');
-  const [message, setMessage] = useState('');
+  const [readyStatus, setReadyStatus] = useState(false);
+  const [usersReadyStatus, setUsersReadyStatus] = useState({});
+  const [usersInRoom, setUsersInRoom] = useState([]);
   const { username } = useAuth();
 
   // Function to create WebSocket
@@ -117,16 +118,18 @@ export default function PlayScreen() {
   }, []);
 
   const handleWebSocketMessage = (e) => {
-    setMessage(e.data);
     const data = JSON.parse(e.data);
-    console.log(data);
-    if (data.type === 'connection_established' || data.type === 'progress') {
-      setIsWaitingForResponse(true);
-    } else if (data.type === 'completed') {
-      setIsWaitingForResponse(false);
+
+    if (data.type === 'server_user_list_update') {
+      setUsersInRoom(data.users);
+    } else if (data.type === 'server_ready_status') {
+      console.log(data);
+      setUsersReadyStatus((prevState) => ({
+        ...prevState,
+        [data.user_name]: data.ready,
+      }));
     } else if (data.type === 'error') {
       console.log(data.message);
-      setIsWaitingForResponse(false);
     }
   };
 
@@ -137,76 +140,96 @@ export default function PlayScreen() {
   };
 
   const closeWebSocket = () => {
+    setReadyStatus(false);
     if (websocket) {
       websocket.close();
       setWebSocket(null);
     }
   };
 
-  // Function to reopen WebSocket
-  const reopenWebSocket = () => {
-    if (channelId === '') return;
-    createWebSocket();
+  const updateReadyStatus = () => {
+    // STARTS!
+    // Update to make sure all in room are ready.
+    setReadyStatus(!readyStatus);
+    if (websocket) {
+      websocket.send(JSON.stringify({ type: 'client_ready_status', status: readyStatus }));
+    }
   };
 
   // images stores the gallery pictures
   const images = [
-    // '../assets/DjangoUnchainedReviews.png',
     'https://www.gamespot.com/a/uploads/original/1597/15976769/4097300-download%2826%29.jpg',
     'https://picsum.photos/20/30',
     'https://picsum.photos/200/300',
     'https://picsum.photos/2000/3000',
-    // 'https://picsum.photos/20000/30000',
   ];
 
   return (
     <View style={styles.page}>
-      <ScrollView>
-        {websocket !== null ? (
-          <>
-            <View style={styles.container}>
-              <Gallery images={images} />
-
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
-                  <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
-                  <Image style={styles.imageforbutton} source={require('../assets/play_button.png')} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
-                  <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <TouchableWithoutFeedback onPress={closeWebSocket}>
+      {websocket == null && (
+        <>
+          <Text style={styles.headertext}>
+            Create/Join
+          </Text>
+          <View style={{ padding: 60 }} />
+          <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
+          <TouchableWithoutFeedback onPress={createWebSocket}>
+            <View style={{ alignSelf: 'center', padding: 20 }}>
               <View style={styles.button}>
                 <Text style={styles.text}>
-                  Close Connection
+                  Create New
                 </Text>
               </View>
-            </TouchableWithoutFeedback>
-          </>
-        ) : (
-          <>
-            <Text style={styles.headertext}>
-              Create/Join Group
+            </View>
+          </TouchableWithoutFeedback>
+        </>
+      )}
+      {websocket && (!readyStatus ? (
+        <View style={styles.container}>
+          <Text style={[styles.headertext, { fontSize: 28 }]}>Waiting Room</Text>
+          <Text style={{ color: 'green' }}>
+            Users:
+            {'\n'}
+            {usersInRoom.map((user) => `${user}, `)}
+            {'\n'}
+            Ready Status:
+            {'\n'}
+            {Object.keys(usersReadyStatus).map((userId) => `${userId}: ${usersReadyStatus[userId]}\n`)}
+          </Text>
+          {/* <Text style={{ color: 'green' }}>{usersReadyStatus}</Text> */}
+          <TouchableWithoutFeedback style={styles.button} onPress={updateReadyStatus}>
+            <Text style={{ color: 'white' }}>
+              {readyStatus ? 'Ready' : 'Not Ready'}
             </Text>
-            <View style={{ padding: 60 }} />
-            <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
-            <TouchableWithoutFeedback onPress={reopenWebSocket}>
-              <View style={{ alignSelf: 'center', padding: 20 }}>
-                <View style={styles.button}>
-                  <Text style={styles.text}>
-                    Open New Connection
-                  </Text>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </>
-        )}
-      </ScrollView>
+          </TouchableWithoutFeedback>
+        </View>
+      ) : (
+        <>
+          <View style={styles.container}>
+            <Gallery images={images} />
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
+                <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
+                <Image style={styles.imageforbutton} source={require('../assets/play_button.png')} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
+                <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableWithoutFeedback onPress={closeWebSocket}>
+            <View style={styles.button}>
+              <Text style={styles.text}>
+                Close Connection
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
+        </>
+      ))}
     </View>
   );
 }

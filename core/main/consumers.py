@@ -21,8 +21,8 @@ class RecommendationServiceConsumer(WebsocketConsumer):
 
         # Add user to new session
         # TODO: Move these functions to after everyone in the room has 'ready' status as True
-        # session = self.get_create_new_session(self.room_name)
-        # self.add_participant_to_session(session, self.user_name)
+        session = self.get_create_new_session(self.room_name)
+        self.add_participant_to_session(session, self.user_name)
 
         # Notify users of a new join
         self.add_user_to_room()
@@ -41,8 +41,8 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         )
 
         # TODO: Move thse functions to after everyone leaves the room
-        # session = self.get_create_new_session(self.room_name)
-        # self.update_session_end_time(session)
+        session = self.get_create_new_session(self.room_name)
+        self.update_session_end_time(session)
 
         # Send a message to the group indicating a user has left
         self.send_user_list_update()

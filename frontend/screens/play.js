@@ -94,6 +94,7 @@ export default function PlayScreen() {
   const [readyStatus, setReadyStatus] = useState(false);
   const [usersReadyStatus, setUsersReadyStatus] = useState({});
   const [usersInRoom, setUsersInRoom] = useState([]);
+  const [allInRoomReady, setAllInRoomReady] = useState(false);
   const { username } = useAuth();
 
   // Function to create WebSocket
@@ -124,6 +125,7 @@ export default function PlayScreen() {
       setUsersInRoom(data.users);
     } else if (data.type === 'server_ready_status') {
       console.log(data);
+      allUsersReadyStatus();
       setUsersReadyStatus((prevState) => ({
         ...prevState,
         [data.user_name]: data.ready,
@@ -147,11 +149,24 @@ export default function PlayScreen() {
     }
   };
 
+  const allUsersReadyStatus = () => {
+    let allReady = false;
+
+    Object.keys(usersReadyStatus).map((userId) => {
+      if (usersReadyStatus[userId] === 'true') {
+        allReady = true;
+      }
+    });
+
+    setAllInRoomReady(allReady);
+  };
+
   const updateReadyStatus = () => {
     // STARTS!
     // Update to make sure all in room are ready.
-    setReadyStatus(!readyStatus);
     if (websocket) {
+      setReadyStatus(!readyStatus);
+      console.log(readyStatus);
       websocket.send(JSON.stringify({ type: 'client_ready_status', status: readyStatus }));
     }
   };
@@ -184,7 +199,9 @@ export default function PlayScreen() {
           </TouchableWithoutFeedback>
         </>
       )}
-      {websocket && (!readyStatus ? (
+      {websocket && (!allInRoomReady ? (
+
+        // -----------WAITING SCREEN-------------//
         <View style={styles.container}>
           <Text style={[styles.headertext, { fontSize: 28 }]}>Waiting Room</Text>
           <Text style={{ color: 'green' }}>
@@ -192,17 +209,26 @@ export default function PlayScreen() {
             {'\n'}
             {usersInRoom.map((user) => `${user}, `)}
             {'\n'}
+            {'\n'}
             Ready Status:
             {'\n'}
             {Object.keys(usersReadyStatus).map((userId) => `${userId}: ${usersReadyStatus[userId]}\n`)}
           </Text>
-          {/* <Text style={{ color: 'green' }}>{usersReadyStatus}</Text> */}
           <TouchableWithoutFeedback style={styles.button} onPress={updateReadyStatus}>
             <Text style={{ color: 'white' }}>
               {readyStatus ? 'Ready' : 'Not Ready'}
             </Text>
           </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={closeWebSocket}>
+            <View style={styles.button}>
+              <Text style={styles.text}>
+                Close Connection
+              </Text>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
+        // --------------------------------------//
+
       ) : (
         <>
           <View style={styles.container}>

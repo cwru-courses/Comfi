@@ -126,7 +126,6 @@ export default function HomeScreen() {
     axios.get(`http://${ENDPOINT_BASE_URL}:8000/api/pastSession?username=${username}`)
       .then((res) => {
         if (res.status === 200) {
-          console.log(res.data);
           setPastSessions(res.data);
         }
       }).catch((err) => console.log(err));

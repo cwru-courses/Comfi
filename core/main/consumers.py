@@ -13,7 +13,6 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.group_name = f"chat_{self.room_name}"
 
-        # Join the group
         async_to_sync(self.channel_layer.group_add)(
             self.group_name,
             self.channel_name
@@ -24,17 +23,13 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         session = self.get_create_new_session(self.room_name)
         self.add_participant_to_session(session, self.user_name)
 
-        # Notify users of a new join
-        self.add_user_to_room()
-        self.send_user_list_update()
+        self.add_user_to_room_and_broadcast_status()
 
-        # Accept the connection
         self.accept()
-
+        
     def disconnect(self, code):
-        self.remove_user_from_room()
+        self.remove_user_from_room_and_broadcast_status()
 
-        # Leave the group
         async_to_sync(self.channel_layer.group_discard)(
             self.group_name,
             self.channel_name
@@ -43,9 +38,6 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         # TODO: Move thse functions to after everyone leaves the room
         session = self.get_create_new_session(self.room_name)
         self.update_session_end_time(session)
-
-        # Send a message to the group indicating a user has left
-        self.send_user_list_update()
 
     def receive(self, text_data):
         # Parse the JSON message
@@ -57,27 +49,41 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             return
         
         if message_type == 'client_ready_status':
-            self.broadcast_ready_status(message.get('status', False))
+            self.update_user_ready_status_and_broadcast(message.get('status', False))
         elif message_type == 'client_choice':
-            self.process_user_choice(message.get('choice', False))
+            self.process_user_choice(message.get('choice', False), message.get('movie_id', False))
         elif message_type == 'server_recommendations':
             self.send_mock_recommendations()
 
     #--------------------HANDLE ROOM STATUS UPDATES-------------------------#
-    def broadcast_ready_status(self, ready_status):
-        # Broadcasts the ready status to all users in the group
-        async_to_sync(self.channel_layer.group_send)(
-            self.group_name,
-            {
-                'type': 'server_ready_status',
-                'user_name': self.user_name,
-                'ready': ready_status
-            }
-        )
+    def add_user_to_room_and_broadcast_status(self):
+        if self.room_name not in self.rooms:
+            self.rooms[self.room_name] = []
+        
+        self.rooms[self.room_name].append({
+            'user_name': self.user_name,
+            'ready_status': False
+        })
 
-    def send_user_list_update(self):
-        # Send an updated list of users in the room to all users
-        users_in_room = self.get_users_in_room()
+        self.broadcast_user_list_update()
+
+    def remove_user_from_room_and_broadcast_status(self):
+        if self.room_name in self.rooms:
+            self.rooms[self.room_name] = [user for user in self.rooms[self.room_name] if user['user_name'] != self.user_name]
+
+            self.broadcast_user_list_update()
+
+    def update_user_ready_status_and_broadcast(self, ready_status):
+        for user in self.rooms[self.room_name]:
+            if user['user_name'] == self.user_name:
+                user['ready_status'] = ready_status
+                break
+        
+        self.broadcast_user_list_update()
+
+    def broadcast_user_list_update(self):
+        users_in_room = [{'user_name': user['user_name'], 'ready_status': user['ready_status']} for user in self.rooms[self.room_name]]
+
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
             {
@@ -85,21 +91,6 @@ class RecommendationServiceConsumer(WebsocketConsumer):
                 'users': users_in_room
             }
         )
-
-    def add_user_to_room(self):
-        if self.room_name not in self.rooms:
-            self.rooms[self.room_name] = []
-        self.rooms[self.room_name].append(self.user_name)
-
-    def remove_user_from_room(self):
-        if self.room_name in self.rooms:
-            self.rooms[self.room_name].remove(self.user_name)
-
-    def get_users_in_room(self):
-        if self.room_name in self.rooms:
-            return self.rooms[self.room_name]
-        else:
-            return []
     #-----------------------------------------------------------------------#
 
     #-----------------------HANDLE UPDATES TO DB----------------------------#
@@ -123,9 +114,8 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         session.save()
 
     #----------------HANDLE RECOMMENDATION SYSTEM UPDATES-------------------#
-    def process_user_choice(self, data):
-        choice = data.get('client_choice')
-
+    def process_user_choice(self, client_choice, movie_id):
+        print(f"{client_choice} : {movie_id}")
         # Send the message to the group
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
@@ -133,7 +123,8 @@ class RecommendationServiceConsumer(WebsocketConsumer):
                 "type": "server_echo_message",
                 "message": {
                     "username": self.user_name,
-                    "choice": choice
+                    "choice": client_choice,
+                    "movie_id": movie_id,
                 },
             }
         )
@@ -156,18 +147,10 @@ class RecommendationServiceConsumer(WebsocketConsumer):
 
     #-----------------------SERVER EVENT FUNCTIONS--------------------------#
     def server_user_list_update(self, event):
-        # Server calls function when user joins or leaves room
+        # Server calls function when user joins, leaves room, or updates 'ready' status
         self.send(text_data=json.dumps({
             'type': 'server_user_list_update',
             'users': event['users']
-        }))
-
-    def server_ready_status(self, event):
-        # Server calls function when user ready status is updated
-        self.send(text_data=json.dumps({
-            'type': 'server_ready_status',
-            'user_name': event['user_name'],
-            'ready': event['ready']
         }))
     
     def server_echo_message(self, event):

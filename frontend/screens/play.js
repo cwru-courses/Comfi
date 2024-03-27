@@ -89,13 +89,13 @@ const styles = StyleSheet.create({
 });
 
 export default function PlayScreen() {
+  const { username } = useAuth();
   const [websocket, setWebSocket] = useState(null);
   const [channelId, setChannelId] = useState('');
-  const [readyStatus, setReadyStatus] = useState(false);
-  const [usersReadyStatus, setUsersReadyStatus] = useState({});
-  const [usersInRoom, setUsersInRoom] = useState([]);
-  const [allInRoomReady, setAllInRoomReady] = useState(false);
-  const { username } = useAuth();
+  const [readyStatus, setReadyStatus] = useState(false); // 'Ready' status of user
+  const [usersReadyStatus, setUsersReadyStatus] = useState({}); // 'Ready' status of users in room
+  const [usersInRoom, setUsersInRoom] = useState([]); // All users in room
+  const [allInRoomReady, setAllInRoomReady] = useState(false); // All users in room ready
 
   // Function to create WebSocket
   const createWebSocket = () => {
@@ -110,7 +110,6 @@ export default function PlayScreen() {
     setWebSocket(ws);
   };
 
-  // Create WebSocket on component mount
   useEffect(() => () => {
     if (websocket) {
       websocket.close();
@@ -118,56 +117,64 @@ export default function PlayScreen() {
     }
   }, []);
 
+  useEffect(() => {
+    const numUsersReady = Object.values(usersReadyStatus).filter((status) => status).length;
+
+    const allReady = usersInRoom.length > 0 && numUsersReady === usersInRoom.length;
+
+    setAllInRoomReady(allReady);
+  }, [usersReadyStatus, usersInRoom]);
+
   const handleWebSocketMessage = (e) => {
     const data = JSON.parse(e.data);
 
     if (data.type === 'server_user_list_update') {
-      setUsersInRoom(data.users);
-    } else if (data.type === 'server_ready_status') {
-      console.log(data);
-      allUsersReadyStatus();
-      setUsersReadyStatus((prevState) => ({
-        ...prevState,
-        [data.user_name]: data.ready,
-      }));
+      const { users } = data;
+
+      const newUsersInRoom = [];
+      const newUsersReadyStatus = {};
+
+      users.forEach((user) => {
+        newUsersInRoom.push(user.user_name);
+        newUsersReadyStatus[user.user_name] = user.ready_status;
+      });
+
+      setUsersInRoom(newUsersInRoom);
+      setUsersReadyStatus(newUsersReadyStatus);
+    } else if (data.type === 'server_echo_message') {
+      console.log(data.message);
     } else if (data.type === 'error') {
       console.log(data.message);
     }
   };
 
-  const sendChoice = (userChoice) => {
+  const sendChoice = (userChoice, movieID) => {
+    // Send the 'choice' for a movie to server
     if (websocket) {
-      websocket.send(JSON.stringify({ type: 'client_choice', client_message: userChoice }));
+      websocket.send(JSON.stringify({ type: 'client_choice', choice: userChoice, movie_id: movieID }));
     }
   };
 
   const closeWebSocket = () => {
+    // Reset all state variables to initial value on room closure
     setReadyStatus(false);
+    setAllInRoomReady(false);
+    setUsersReadyStatus({});
+    setUsersInRoom([]);
+
+    // Close open websocket
     if (websocket) {
       websocket.close();
       setWebSocket(null);
     }
   };
 
-  const allUsersReadyStatus = () => {
-    let allReady = false;
-
-    Object.keys(usersReadyStatus).map((userId) => {
-      if (usersReadyStatus[userId] === 'true') {
-        allReady = true;
-      }
-    });
-
-    setAllInRoomReady(allReady);
-  };
-
   const updateReadyStatus = () => {
-    // STARTS!
-    // Update to make sure all in room are ready.
+    // Send the 'ready' status of user to server
     if (websocket) {
-      setReadyStatus(!readyStatus);
-      console.log(readyStatus);
-      websocket.send(JSON.stringify({ type: 'client_ready_status', status: readyStatus }));
+      const newReadyStatus = !readyStatus;
+      setReadyStatus(newReadyStatus);
+      websocket.send(JSON.stringify({ type: 'client_ready_status', status: newReadyStatus }));
     }
   };
 
@@ -209,6 +216,8 @@ export default function PlayScreen() {
             {'\n'}
             {usersInRoom.map((user) => `${user}, `)}
             {'\n'}
+            MY Status:
+            {`${readyStatus}`}
             {'\n'}
             Ready Status:
             {'\n'}
@@ -235,13 +244,13 @@ export default function PlayScreen() {
             <Gallery images={images} />
 
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Previous', movieID: 'MOVIE_ID' })}>
+              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice('Previous', 'MOVIE_ID')}>
                 <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Like', movieID: 'MOVIE_ID' })}>
+              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice('Like', 'MOVIE_ID')}>
                 <Image style={styles.imageforbutton} source={require('../assets/play_button.png')} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice({ choice: 'Next', movieID: 'MOVIE_ID' })}>
+              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice('Next', 'MOVIE_ID')}>
                 <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
               </TouchableOpacity>
             </View>

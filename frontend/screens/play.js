@@ -9,12 +9,17 @@ import Gallery from './Gallery';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'left'
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 200,
+    marginHorizontal:25,
+    // margin:200,
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -42,7 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: 200,
   },
   text: {
-    textAlign: 'center',
+    textAlign: 'left',
     fontSize: 16,
     lineHeight: 21,
     fontWeight: 'bold',
@@ -209,25 +214,41 @@ export default function PlayScreen() {
       {websocket && (!allInRoomReady ? (
 
         // -----------WAITING SCREEN-------------//
-        <View style={styles.container}>
-          <Text style={[styles.headertext, { fontSize: 28 }]}>Waiting Room</Text>
-          <Text style={{ color: 'green' }}>
+        <View>
+          <Text style={[styles.headertext, { fontSize: 28 , padding: 10}]}>Waiting Room</Text>
+          <Text style={[styles.text, {color: "green"}]}>
             Users:
             {'\n'}
             {usersInRoom.map((user) => `${user}, `)}
             {'\n'}
             MY Status:
-            {`${readyStatus}`}
+            {` ${readyStatus}`}
             {'\n'}
-            Ready Status:
+            Ready Status: 
             {'\n'}
             {Object.keys(usersReadyStatus).map((userId) => `${userId}: ${usersReadyStatus[userId]}\n`)}
           </Text>
+          <View style={{
+              // alignItems: 'center',
+              // justifyContent: 'center',
+              // alignSelf: 'right',
+              width: 85,
+              height: 30,
+              borderRadius: 5,
+              // elevation: 20,
+              backgroundColor: 'silver',
+              // marginHorizontal: 15,
+              // marginBottom: 200,
+            }}>
           <TouchableWithoutFeedback style={styles.button} onPress={updateReadyStatus}>
-            <Text style={{ color: 'white' }}>
+            
+            <Text style={styles.text}>
               {readyStatus ? 'Ready' : 'Not Ready'}
             </Text>
+            
           </TouchableWithoutFeedback>
+          </View>
+          <View style = {styles.buttonContainer}>
           <TouchableWithoutFeedback onPress={closeWebSocket}>
             <View style={styles.button}>
               <Text style={styles.text}>
@@ -235,6 +256,7 @@ export default function PlayScreen() {
               </Text>
             </View>
           </TouchableWithoutFeedback>
+          </View>
         </View>
         // --------------------------------------//
 

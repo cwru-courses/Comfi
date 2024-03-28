@@ -1,12 +1,16 @@
 import json
+import numpy as np
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from .models import PastSession, SessionParticipant
+from .models import PastSession, SessionParticipant,Interest
+from .similiarity_suggestion import SimUserSuggest
 
 class RecommendationServiceConsumer(WebsocketConsumer):
     rooms = {}
+    simUserAlgo = SimUserSuggest()
+
 
     def connect(self):
         self.user_name = self.scope['url_route']['kwargs']['user_name']
@@ -136,6 +140,35 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             {"title": "Recommendation 2", "Description": "Description 2"},
         ]
         return mock_recommendations
+    
+    def generate_recommendations(self, num_recommendations):
+        sessionInterests = Interest.objects.filter(user__sessionparticipant__session__roomName = self.room_name).order_by("user")
+        users = sessionInterests.values_list("user")
+        movieIDs = sessionInterests.values_list("movieID")
+        user_likes = sessionInterests.values_list("like")
+        if(len(users)==0):
+            #TBD: return initial recommendation list
+            return self.generate_mock_recommendations()
+        users_ratings = []
+        users_movieIDs= []
+        curr_user_ratings = np.array([])
+        curr_user_IDs = np.array([])
+        curr_user = users[0]
+        for i in range(len(users)):
+            if users[i] != curr_user:
+                users_ratings.append(curr_user_ratings)
+                users_movieIDs.append(curr_user_IDs)
+                curr_user_ratings = np.array([])
+                curr_user_IDs = np.array([])
+                curr_user = users[i]
+            np.append(curr_user_ratings,[1 if user_likes[i] else -1])
+            #tbd: movieIDs stored differently?
+            np.append(curr_user_IDs,movieIDs[i])
+        recommend_IDs = self.simUserAlgo.predict(users_movieIDs,users_ratings,num_predictions=num_recommendations)
+        # TBD: convert imdb ids to title and descriptions
+        return recommend_IDs
+
+
     
     def send_mock_recommendations(self):
         mock_recommendations = self.generate_mock_recommendations()

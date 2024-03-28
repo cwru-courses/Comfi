@@ -8,7 +8,7 @@ from similiarity_suggestion import SimUserSuggest
 # Create your tests here.
 
 def test_similiarity_suggestion(test_data_loc, num_predict_users):
-    sim_user_model = SimUserSuggest("C:/Users/17742/Developer/Comphy/core/ml-25m")
+    sim_user_model = SimUserSuggest("INSERT PATH HERE")
     ratings_df = pd.read_csv(test_data_loc+"/ratings.csv")
     movies_df = pd.read_csv(test_data_loc+"/links.csv")
     num_movies= movies_df.loc[len(movies_df)-1,movies_df.columns[0]]
@@ -60,4 +60,4 @@ def test_similiarity_suggestion(test_data_loc, num_predict_users):
     
 
     
-test_similiarity_suggestion('C:/Users/17742/Developer/Comphy/core/ml-latest-small', 1)
+test_similiarity_suggestion("INSERT PATH HERE", 1)

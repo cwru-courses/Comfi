@@ -4,8 +4,10 @@ from scipy.sparse import csr_array
 from scipy.sparse import diags
 from scipy.linalg import norm
 
+data_folder_location = "./ml-25m"
+
 class SimUserSuggest():
-    def __init__(self, data_folder_location, num_similiar=5,max_user_dataset = 15000):
+    def __init__(self, num_similiar=5,max_user_dataset = 15000):
         ratings_df = pd.read_csv(data_folder_location+"/ratings.csv")
         movies_df = pd.read_csv(data_folder_location+"/links.csv")
         num_movies= movies_df.loc[len(movies_df)-1,movies_df.columns[0]]
@@ -39,7 +41,7 @@ class SimUserSuggest():
         self.imdb_to_index = {imdb_ids_array[i]: indices[i] for i in range(len(imdb_ids_array))}
         self.num_movies = num_movies
         self.ratings_norms = np.transpose(np.array([[norm(ratings_matrix[[i],:].toarray()) for i in np.arange(num_users)]]))
-        print(np.where(self.ratings_norms==0)[0])
+        #print(np.where(self.ratings_norms==0)[0])
 
 
     
@@ -69,28 +71,6 @@ class SimUserSuggest():
         return  self.suggest_movies(users_sparse, has_been_rated,num_suggestions = num_predictions)
         
         
-        
-
-    def construct_ratings_matrix():
-        movies_df=pd.read_csv("ml-25m/links.csv")
-        ratings_df = pd.read_csv("ml-25m/ratings.csv")
-        num_movies= movies_df.loc[len(movies_df)-1,movies_df.columns[0]]
-        num_users = ratings_df.loc[len(ratings_df)-1,ratings_df.columns[0]]
-        rows = ratings_df.loc[:,ratings_df.columns[0]].to_numpy() #get user id list
-        rows = rows-1 #index = userID-1
-        cols = ratings_df.loc[:,ratings_df.columns[1]].to_numpy()
-        cols = cols-1
-        ratings = ratings_df.loc[:,ratings_df.columns[2]].to_numpy()
-
-        ratings_matrix = csr_array((ratings, (rows, cols)), shape=(num_users, num_movies))
-        ratings_sum = ratings_matrix.sum(axis=1)
-        counts = np.diff(ratings_matrix.indptr)
-        averages = ratings_sum / counts
-        avg_diag= diags(averages, 0)
-        data_locations = ratings_matrix.copy()
-        data_locations.data = np.ones_like(data_locations.data)
-        ratings_matrix = ratings_matrix - (avg_diag*data_locations)
-        return ratings_matrix
 
     def suggest_movies(self, users_ratings, users_have_rated, num_suggestions=5):
         total_similiarity = np.zeros(self.num_users)

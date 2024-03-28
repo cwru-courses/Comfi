@@ -37,3 +37,13 @@ yarn-error.*
 
 # vscode
 .vscode/
+
+#pychache
+core/main/__pycache__/
+core/core/__pycache__/
+
+#movie data
+
+core/ml-25m/
+core/ml-latest-small/
+core/ml-latest-small/

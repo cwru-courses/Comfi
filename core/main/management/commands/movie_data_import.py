@@ -75,10 +75,14 @@ class Command(BaseCommand):
                 if (item['media_type'] != "movie"):
                     continue
             if 'release_year' in item:
-                if (item['release_year'] <= 1940):
+                if(item['release_year'] == 'None'):
+                    continue
+                elif (int(item['release_year']) <= 1940):
                     continue
             if 'runtime' in item:
-                if (item['runtime'] <= 30):
+                if(item['runtime'] == 'None'):
+                    continue
+                elif (int(item['runtime']) <= 30):
                     continue
             # Convert array data to JSON before saving
             if 'genres_array' in item:

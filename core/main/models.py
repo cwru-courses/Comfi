@@ -18,6 +18,7 @@ class Interest(models.Model):
 
     def __str__(self):
         return self.movieID
+    
 class PastSession(models.Model):
     sessionID = models.AutoField(primary_key=True)
     roomName = models.CharField(max_length=63)

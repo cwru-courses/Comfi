@@ -11,14 +11,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
-    alignItems: 'left'
+    alignItems: 'left',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 200,
-    marginHorizontal:25,
+    marginHorizontal: 25,
     // margin:200,
     width: 100,
     height: 100,
@@ -89,6 +89,27 @@ const styles = StyleSheet.create({
     margin: 2,
     textAlign: 'left',
     flexDirection: 'column',
+    flexWrap: 'wrap',
+  },
+  smallcontainer: {
+    // flex: 1,
+    backgroundColor: 'dimgrey',
+    alignItems: 'right',
+    justifyContent: 'right',
+    textAlign: 'left',
+    borderRadius: 10,
+    margin: 5,
+    padding: 10,
+  },
+  profiletext: {
+    color: 'white',
+    fontSize: 20,
+    padding: 2,
+    margin: 2,
+    textAlign: 'left',
+    justifyContent: 'flex-end',
+    // flexDirection: 'row',
+    fontWeight: 'bold',
     flexWrap: 'wrap',
   },
 });
@@ -215,47 +236,23 @@ export default function PlayScreen() {
 
         // -----------WAITING SCREEN-------------//
         <View>
-          <Text style={[styles.headertext, { fontSize: 28 , padding: 10}]}>Waiting Room</Text>
-          <Text style={[styles.text, {color: "green"}]}>
-            Users:
-            {'\n'}
-            {usersInRoom.map((user) => `${user}, `)}
-            {'\n'}
-            MY Status:
-            {` ${readyStatus}`}
-            {'\n'}
-            Ready Status: 
-            {'\n'}
-            {Object.keys(usersReadyStatus).map((userId) => `${userId}: ${usersReadyStatus[userId]}\n`)}
-          </Text>
-          <View style={{
-              // alignItems: 'center',
-              // justifyContent: 'center',
-              // alignSelf: 'right',
-              width: 85,
-              height: 30,
-              borderRadius: 5,
-              // elevation: 20,
-              backgroundColor: 'silver',
-              // marginHorizontal: 15,
-              // marginBottom: 200,
-            }}>
-          <TouchableWithoutFeedback style={styles.button} onPress={updateReadyStatus}>
-            
-            <Text style={styles.text}>
-              {readyStatus ? 'Ready' : 'Not Ready'}
-            </Text>
-            
-          </TouchableWithoutFeedback>
-          </View>
-          <View style = {styles.buttonContainer}>
-          <TouchableWithoutFeedback onPress={closeWebSocket}>
-            <View style={styles.button}>
-              <Text style={styles.text}>
-                Close Connection
-              </Text>
-            </View>
-          </TouchableWithoutFeedback>
+          <Text style={[styles.headertext, { fontSize: 28, padding: 10 }]}>Waiting Room</Text>
+          {
+            Object.keys(usersReadyStatus).map((user) => (
+              <View style={styles.smallcontainer} key={user}>
+                <Text style={styles.profiletext}>{user}</Text>
+                <Text style={styles.profiletext}>{`${usersReadyStatus[user]}`}</Text>
+              </View>
+            ))
+          }
+          <View style={styles.buttonContainer}>
+            <TouchableWithoutFeedback onPress={closeWebSocket}>
+              <View style={styles.button}>
+                <Text style={styles.text}>
+                  Close Connection
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
         </View>
         // --------------------------------------//

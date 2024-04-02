@@ -16,7 +16,7 @@ class InterestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Interest
         fields = ('user', 'movieID', 'like', 'timesViewed')
-        
+
 class PastSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PastSession

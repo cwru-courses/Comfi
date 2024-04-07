@@ -38,6 +38,7 @@ class SimUserSuggest():
         indices = indices-1
         self.index_to_imdb = csr_array((imdb_ids_array,(np.zeros((len(indices))),indices)),shape=(1,num_movies)).toarray()[0]
         self.num_similiar = num_similiar
+        print("num_sim ", self.num_similiar)
         self.imdb_to_index = {imdb_ids_array[i]: indices[i] for i in range(len(imdb_ids_array))}
         self.num_movies = num_movies
         self.ratings_norms = np.transpose(np.array([[norm(ratings_matrix[[i],:].toarray()) for i in np.arange(num_users)]]))

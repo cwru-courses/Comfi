@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import PastSession, SessionParticipant,Interest
 from .similiarity_suggestion import SimUserSuggest
+import requests
+from ..core.constants import TMDB_BASE_POSTER_URL, TMDB_API_KEY
 
 class RecommendationServiceConsumer(WebsocketConsumer):
     rooms = {}
@@ -141,7 +143,9 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         ]
         return mock_recommendations
     
+
     def generate_recommendations(self, num_recommendations):
+        #TBD: add lr-suggestion model
         sessionInterests = Interest.objects.filter(user__sessionparticipant__session__roomName = self.room_name).order_by("user")
         users = sessionInterests.values_list("user")
         movieIDs = sessionInterests.values_list("movieID")
@@ -165,8 +169,31 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             #tbd: movieIDs stored differently?
             np.append(curr_user_IDs,movieIDs[i])
         recommend_IDs = self.simUserAlgo.predict(users_movieIDs,users_ratings,num_predictions=num_recommendations)
-        # TBD: convert imdb ids to title and descriptions
-        return recommend_IDs
+        recommendations = []
+        url = "https://api.themoviedb.org/3/find/{}?external_source=imdb_id"
+
+        headers = {
+            "accept": "application/json",
+            "Authorization": "Bearer "+ TMDB_API_KEY
+        }
+
+
+        for id in recommend_IDs:
+            imdb_id = int_to_imdb_string(id)
+            response = requests.get(url.format(imdb_id), headers=headers)["movie_results"]
+            if len(response)>0:
+                movie_data = response[0]
+            else:
+                recommendations.append({
+                    "imdb_id": imdb_id,
+                    "title":movie_data.title,
+                    "description":movie_data.overview,
+                    "poster_link": TMDB_BASE_POSTER_URL+movie_data.poster_path,
+                    "release_date": movie_data.release_date,
+                    "vote_average": movie_data.vote_average,
+                })
+
+        return recommendations
 
 
     
@@ -191,3 +218,10 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         message = event["message"]
         self.send(text_data=json.dumps(message))
     #-----------------------------------------------------------------------#
+        
+
+def int_to_imdb_string(imdb_int):
+    imdb_string = str(imdb_int)
+    while(len(imdb_string)<7):
+        imdb_string= "0"+imdb_string
+    return "tt"+imdb_string

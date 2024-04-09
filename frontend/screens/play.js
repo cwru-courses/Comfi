@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     elevation: 20,
     backgroundColor: 'silver',
     marginHorizontal: 15,
-    marginBottom: 200,
+    marginBottom: 10,
   },
   imagebutton: {
     alignItems: 'center',
@@ -222,7 +222,7 @@ export default function PlayScreen() {
           <View style={{ padding: 60 }} />
           <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
           <TouchableWithoutFeedback onPress={createWebSocket}>
-            <View style={{ alignSelf: 'center', padding: 20 }}>
+            <View>
               <View style={styles.button}>
                 <Text style={styles.text}>
                   Create New
@@ -253,6 +253,23 @@ export default function PlayScreen() {
                 </Text>
               </View>
             </TouchableWithoutFeedback>
+            {readyStatus ? (
+              <TouchableWithoutFeedback onPress={updateReadyStatus}>
+                <View style={styles.button}>
+                  <Text style={styles.text}>
+                    Ready
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+            ) : (
+              <TouchableWithoutFeedback onPress={updateReadyStatus}>
+                <View style={styles.button}>
+                  <Text style={styles.text}>
+                    Not Ready
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+            )}
           </View>
         </View>
         // --------------------------------------//

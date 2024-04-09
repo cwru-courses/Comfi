@@ -56,4 +56,33 @@ class Migration(migrations.Migration):
                 'unique_together': {('user', 'movieID')},
             },
         ),
+        migrations.CreateModel(
+            name='Movies',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(max_length=200)),
+                ('movieID', models.CharField(max_length=200)),
+                ('media_type', models.CharField(max_length=200)),
+                ('release_year', models.CharField(max_length=200)),
+                ('runtime', models.CharField(max_length=200)),
+                ('genres_array', models.CharField(max_length=200)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='PastSession',
+            fields=[
+                ('sessionID', models.AutoField(primary_key=True, serialize=False)),
+                ('roomName', models.CharField(max_length=63)),
+                ('startTime', models.DateTimeField()),
+                ('endTime', models.DateTimeField(blank=True, null=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='SessionParticipant',
+            fields=[
+                ('sessionParticipantID', models.AutoField(primary_key=True, serialize=False)),
+                ('session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.pastsession')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
     ]

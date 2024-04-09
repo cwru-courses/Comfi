@@ -18,13 +18,7 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             self.channel_name
         )
 
-        # Add user to new session
-        # TODO: Move these functions to after everyone in the room has 'ready' status as True
-        session = self.get_create_new_session(self.room_name)
-        self.add_participant_to_session(session, self.user_name)
-
         self.add_user_to_room_and_broadcast_status()
-
         self.accept()
         
     def disconnect(self, code):
@@ -34,10 +28,7 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             self.group_name,
             self.channel_name
         )
-
-        # TODO: Move thse functions to after everyone leaves the room
-        session = self.get_create_new_session(self.room_name)
-        self.update_session_end_time(session)
+        # TODO: Add handling of different status codes
 
     def receive(self, text_data):
         # Parse the JSON message
@@ -50,10 +41,22 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         
         if message_type == 'client_ready_status':
             self.update_user_ready_status_and_broadcast(message.get('status', False))
+        elif message_type == 'client_terminate':
+            self.update_session_end_time(self.session)
+            self.close_room()
         elif message_type == 'client_choice':
             self.process_user_choice(message.get('choice', False), message.get('movie_id', False))
         elif message_type == 'server_recommendations':
             self.send_mock_recommendations()
+
+    def close_room(self):
+        async_to_sync(self.channel_layer.group_send)(
+            self.group_name,
+            {
+                'type': 'server_terminate_message'
+            }
+        )
+        self.close()
 
     #--------------------HANDLE ROOM STATUS UPDATES-------------------------#
     def add_user_to_room_and_broadcast_status(self):
@@ -84,6 +87,11 @@ class RecommendationServiceConsumer(WebsocketConsumer):
     def broadcast_user_list_update(self):
         users_in_room = [{'user_name': user['user_name'], 'ready_status': user['ready_status']} for user in self.rooms[self.room_name]]
 
+        all_ready = all(user['ready_status'] for user in self.rooms[self.room_name])
+        if all_ready:
+            users = [user['user_name'] for user in self.rooms[self.room_name]]
+            self.add_participants_to_session(users)
+
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
             {
@@ -91,23 +99,22 @@ class RecommendationServiceConsumer(WebsocketConsumer):
                 'users': users_in_room
             }
         )
+
     #-----------------------------------------------------------------------#
 
     #-----------------------HANDLE UPDATES TO DB----------------------------#
-    def get_create_new_session(self, room_name):
-        try:
-            # Update existing session for all users in room
-            session = PastSession.objects.get(roomName=room_name, endTime__isnull=True)
-        except PastSession.DoesNotExist:
-            # If no session exists, create a new session
-            session = PastSession.objects.create(roomName=room_name, startTime=timezone.now())
+    def create_new_session(self, room_name):
+        session = PastSession.objects.create(roomName=room_name, startTime=timezone.now())
         return session
 
-    def add_participant_to_session(self, session, username):
-        User = get_user_model()
-        user = User.objects.get(username=username)
-        participant = SessionParticipant.objects.create(session=session, user=user)
-        return participant
+    def add_participants_to_session(self, users):
+        self.session = self.create_new_session(self.room_name)
+        for user in users:
+            user_object = get_user_model().objects.get(username=user)
+            SessionParticipant.objects.create(
+                session=self.session,
+                user=user_object
+            )
     
     def update_session_end_time(self, session):
         session.endTime = timezone.now()
@@ -157,4 +164,9 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         # Receive the message from the group and send it back to the sender
         message = event["message"]
         self.send(text_data=json.dumps(message))
+
+    def server_terminate_message(self, event):
+        self.send(text_data=json.dumps({
+            "type": "server_terminate"
+        }))
     #-----------------------------------------------------------------------#

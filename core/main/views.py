@@ -79,7 +79,7 @@ class SessionParticipantView(viewsets.ModelViewSet):
     def get_queryset(self):
         username = self.request.query_params.get('username', None)
         if username:
-            return PastSession.objects.filter(sessionparticipant__user__username=username).distinct()
+            return SessionParticipant.objects.filter(user__username=username).distinct()
 
 class MovieView(viewsets.ModelViewSet):
     serializer_class = MovieSerializer

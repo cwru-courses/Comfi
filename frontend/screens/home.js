@@ -123,9 +123,8 @@ export default function HomeScreen() {
   );
 
   const getPreviousSessions = () => {
-    axios.get(`http://${ENDPOINT_BASE_URL}:8000/api/sessionParticipants?username=${username}`)
+    axios.get(`http://${ENDPOINT_BASE_URL}:8000/api/pastSession?username=${username}`)
       .then((res) => {
-        console.log(res.data);
         if (res.status === 200) {
           setPastSessions(res.data);
         }

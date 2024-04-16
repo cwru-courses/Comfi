@@ -143,6 +143,7 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         ]
         return mock_recommendations
     
+    
 
     def generate_recommendations(self, num_recommendations):
         #TBD: add lr-suggestion model
@@ -181,9 +182,10 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         for id in recommend_IDs:
             imdb_id = int_to_imdb_string(id)
             response = requests.get(url.format(imdb_id), headers=headers)["movie_results"]
+
             if len(response)>0:
                 movie_data = response[0]
-            else:
+                trailers = get_movie_trailers(movie_data.id)
                 recommendations.append({
                     "imdb_id": imdb_id,
                     "title":movie_data.title,
@@ -191,7 +193,10 @@ class RecommendationServiceConsumer(WebsocketConsumer):
                     "poster_link": TMDB_BASE_POSTER_URL+movie_data.poster_path,
                     "release_date": movie_data.release_date,
                     "vote_average": movie_data.vote_average,
+                    "trailers": trailers,
                 })
+            else:
+                print("Error could not find movie {}".format(imdb_id))
 
         return recommendations
 
@@ -225,3 +230,20 @@ def int_to_imdb_string(imdb_int):
     while(len(imdb_string)<7):
         imdb_string= "0"+imdb_string
     return "tt"+imdb_string
+
+def get_movie_trailers(TMDb_id):
+        url = "https://api.themoviedb.org/3/movie/{}/videos?language=en-US".format(TMDb_id)
+
+        headers = {
+            "accept": "application/json",
+            "Authorization": "Bearer {}".format(TMDB_API_KEY)
+        }
+
+        response = requests.get(url, headers=headers)
+        videos_list = response['results']
+        youtube_video_url_base = 'https://www.youtube.com/watch?v='
+        trailer_links = []
+        for video_data in videos_list:
+            if video_data['site'] =='YouTube' and video_data['type']=='Trailer':
+                trailer_links.append(youtube_video_url_base+video_data['key'])
+        return trailer_links

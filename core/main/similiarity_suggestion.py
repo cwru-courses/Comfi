@@ -7,7 +7,7 @@ from scipy.linalg import norm
 data_folder_location = "./ml-25m"
 
 class SimUserSuggest():
-    def __init__(self, num_similiar=5,max_user_dataset = 15000):
+    def __init__(self, num_similiar=5,max_user_dataset = 100000):
         ratings_df = pd.read_csv(data_folder_location+"/ratings.csv")
         movies_df = pd.read_csv(data_folder_location+"/links.csv")
         num_movies= movies_df.loc[len(movies_df)-1,movies_df.columns[0]]
@@ -28,6 +28,9 @@ class SimUserSuggest():
         data_locations.data = np.ones_like(data_locations.data)
         ratings_matrix = ratings_matrix - (avg_diag*data_locations)
 
+        index = np.arange(np.shape(ratings_matrix)[0])
+        np.random.shuffle(index)
+        ratings_matrix = ratings_matrix[index, :]
         num_users = min(max_user_dataset,num_users)
         self.num_users = num_users
         ratings_matrix = ratings_matrix[:num_users,:]
@@ -70,6 +73,8 @@ class SimUserSuggest():
         users_sparse = csr_array( (data,(rows,cols)),shape=(len(users_ratings),self.num_movies))
         
         return  self.suggest_movies(users_sparse, has_been_rated,num_suggestions = num_predictions)
+    
+    
         
         
 
@@ -106,3 +111,25 @@ class SimUserSuggest():
                 num_selected+=1
             index+=1
         return best_imdb_ids
+    
+    def predict_ratings(self, users_ratings):
+        total_similiarity = np.zeros(self.num_users)
+        for user_ratings in users_ratings:
+            user_ratings = user_ratings.toarray()
+            similiarity_scores = self.ratings.dot(user_ratings.transpose())
+            similiarity_scores = similiarity_scores / norm(user_ratings)
+            similiarity_scores = similiarity_scores / self.ratings_norms
+            similiarity_scores = np.nan_to_num(similiarity_scores)
+            similiarity_scores = 1-similiarity_scores
+            similiarity_scores = np.power(similiarity_scores+0.001,-2)
+            total_similiarity+=np.transpose(similiarity_scores)[0]
+        total_similiarity = np.power(total_similiarity,0.5)
+        indices = np.argsort(total_similiarity)
+        weighted_ratings = diags(total_similiarity, 0)*self.ratings
+        sum_ratings = np.zeros((self.num_movies))
+        for i in np.arange(self.num_similiar):
+            #print("sampling from user ",indices[len(indices)-i-1])
+            sum_ratings += weighted_ratings[[indices[len(indices)-i-1]],:].toarray()[0]
+        sum_ratings = np.divide(sum_ratings,np.abs(sum_ratings))
+        sum_ratings = np.nan_to_num(sum_ratings)
+        return sum_ratings

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, TouchableOpacity,
+  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
@@ -9,7 +9,7 @@ import Gallery from './Gallery';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 25,
     justifyContent: 'center',
     alignItems: 'left',
   },
@@ -17,12 +17,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 200,
-    marginHorizontal: 25,
-    // margin:200,
+    // marginTop: 10,
+    // marginHorizontal: 25,
+    // margin: 200,
     width: 100,
     height: 100,
     borderRadius: 50,
+    paddingTop: 150,
   },
   button: {
     alignItems: 'center',

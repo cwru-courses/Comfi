@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
   const [userToken, setUserToken] = useState(false);
   const [error, setError] = useState('');
   const [isSignout, setIsSignout] = useState(false);
+  const [name, setName] = useState('');
 
   const getUserToken = async () => {
     try {
@@ -24,12 +25,6 @@ export function AuthProvider({ children }) {
       setUserToken(false);
     }
   };
-
-  useEffect(() => {
-    if (!isSignout) {
-      getUserToken();
-    }
-  }, []);
 
   const signIn = (user) => {
     setError('');
@@ -93,6 +88,26 @@ export function AuthProvider({ children }) {
     });
   };
 
+  const getUserData = () => {
+    axios.get(`http://${ENDPOINT_BASE_URL}:8000/api/users/?username=${SecureStore.getItem('username')}`)
+      .then((res) => {
+        if (res.status === 200) {
+          // eslint-disable-next-line dot-notation, camelcase, prefer-destructuring
+          const first_name = res.data[0]['first_name'];
+          // eslint-disable-next-line dot-notation, camelcase, prefer-destructuring
+          const last_name = res.data[0]['last_name'];
+          setName(`${first_name} ${last_name}`);
+        }
+      }).catch((e) => console.log(e));
+  };
+
+  useEffect(() => {
+    if (!isSignout) {
+      getUserToken();
+    }
+    getUserData();
+  }, [username]);
+
   const getFirstName = () => (userData.first_name);
 
   const getLastName = () => (userData.last_name);
@@ -110,6 +125,7 @@ export function AuthProvider({ children }) {
       username,
       getFirstName,
       getLastName,
+      name,
     }}
     >
       {children}

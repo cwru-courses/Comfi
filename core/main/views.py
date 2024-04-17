@@ -72,14 +72,19 @@ class PastSessionView(viewsets.ModelViewSet):
     serializer_class = PastSessionSerializer
     queryset = PastSession.objects.all()
 
+    def get_queryset(self):
+        username = self.request.query_params.get('username', None)
+        user = CustomUser.objects.get(username=username)
+
+        if user:
+            sessions = SessionParticipant.objects.filter(user=user)
+            session_ids = [session_participant.session.sessionID for session_participant in sessions]
+            return PastSession.objects.filter(pk__in=session_ids).order_by('-startTime')[:10]
+        return PastSession.objects.none()
+
 class SessionParticipantView(viewsets.ModelViewSet):
     serializer_class = SessionParticipantSerializer
     queryset = SessionParticipant.objects.all()
-
-    def get_queryset(self):
-        username = self.request.query_params.get('username', None)
-        if username:
-            return PastSession.objects.filter(sessionparticipant__user__username=username).distinct()
 
 class MovieView(viewsets.ModelViewSet):
     serializer_class = MovieSerializer

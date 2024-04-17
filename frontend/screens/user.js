@@ -39,22 +39,20 @@ const styles = StyleSheet.create({
 
 export default function UserScreen() {
   const {
-    setIsSignout, signOut, getFirstName, getLastName,
+    setIsSignout, signOut, name,
   } = useAuth();
-  const firstName = getFirstName();
-  const lastName = getLastName();
 
   const handleSignoutPress = async () => {
     setIsSignout(true);
     signOut();
   };
 
-  const capitalize = (name) => name.charAt(0).toUpperCase() + name.slice(1);
+  // const capitalize = (name) => name.charAt(0).toUpperCase() + name.slice(1);
 
   return (
     <View style={styles.container}>
       <View style={styles.userData}>
-        <Text style={styles.userText}>{`${capitalize(firstName)} ${capitalize(lastName)}`}</Text>
+        <Text style={styles.userText}>{`${name}`}</Text>
       </View>
       <TouchableWithoutFeedback onPress={handleSignoutPress}>
         <View style={styles.button}>

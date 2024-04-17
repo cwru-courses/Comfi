@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import time
 from django.utils import timezone
 
-
 class Command(BaseCommand):
     help = 'Import data from a gzipped, tab-separated-values (TSV) formatted file, such as the formatted IMDb file(s)'
     #To run the command, do [python manage.py movie_data_import /path/to/your/dataset.tsv.gz] in the terminal
@@ -23,7 +22,7 @@ class Command(BaseCommand):
         
     def handle(self, *args, **kwargs):
         file_path = kwargs['file_path'] #Need file path
-        groups_imdb_ids, groups_ratings = self.generate_mock_users(file_path,1,8)
+        groups_imdb_ids, groups_ratings = self.generate_mock_users(file_path,5,8)
         print(f"num_groups = {len(groups_ratings)}")
         print(f"num_users = {len(groups_ratings[0])}")
         print(f"num_ratings = {len(groups_ratings[0][0])}")
@@ -91,14 +90,14 @@ class Command(BaseCommand):
         for i in range(num_groups):
             curr_users_ids = groups_imdb_ids[i]
             curr_users_ratings = groups_ratings[i]
-            curr_session = PastSession.objects.create(roomName=f"blankRoom", startTime=timezone.now())
+            curr_session = PastSession.objects.create(roomName=f"testRoom{i}", startTime=timezone.now())
             num_users = len(curr_users_ids)
             for j in range(num_users):
-                curr_user = CustomUser.objects.create(username=f"testUserBlank{j}")
+                curr_user = CustomUser.objects.create(username=f"testUser{i}{j}")
                 movie_ids = curr_users_ids[j]
                 movie_ratings = curr_users_ratings[j]
                 SessionParticipant.objects.create(session=curr_session, user=curr_user)
-                for k in range(0):
+                for k in range(len(movie_ids)):
                     user_likes = movie_ratings[k]>0
                     Interest.objects.create(user = curr_user, movieID = int_to_imdb_string(movie_ids[k]), like=user_likes, timesViewed = int(np.ceil(np.random.rand()*50)))
 

@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         
     def handle(self, *args, **kwargs):
-        room_name = 'blankRoom'
+        room_name = 'testRoom2'
         simUserAlgo = SimUserSuggest()
         print(generate_recommendations(room_name,5,simUserAlgo))
         self.stdout.write(self.style.SUCCESS('Data imported successfully'))

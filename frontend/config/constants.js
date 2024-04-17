@@ -1,4 +1,4 @@
-export const ENDPOINT_BASE_URL = '172.20.3.165';
+export const ENDPOINT_BASE_URL = '44.223.75.230';
 
 export const TMDB_BASE_POSTER_URL = 'https://image.tmdb.org/t/p/original';
 

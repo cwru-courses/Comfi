@@ -7,7 +7,7 @@ from scipy.linalg import norm
 data_folder_location = "./ml-25m"
 
 class SimUserSuggest():
-    def __init__(self, num_similiar=5,max_user_dataset = 100000):
+    def __init__(self, num_similiar=7,max_user_dataset = 100000):
         ratings_df = pd.read_csv(data_folder_location+"/ratings.csv")
         movies_df = pd.read_csv(data_folder_location+"/links.csv")
         num_movies= movies_df.loc[len(movies_df)-1,movies_df.columns[0]]
@@ -27,7 +27,7 @@ class SimUserSuggest():
         data_locations = ratings_matrix.copy()
         data_locations.data = np.ones_like(data_locations.data)
         ratings_matrix = ratings_matrix - (avg_diag*data_locations)
-
+        self.movie_num_ratings = data_locations.sum(axis=0)
         index = np.arange(np.shape(ratings_matrix)[0])
         np.random.shuffle(index)
         ratings_matrix = ratings_matrix[index, :]
@@ -47,7 +47,10 @@ class SimUserSuggest():
         self.ratings_norms = np.transpose(np.array([[norm(ratings_matrix[[i],:].toarray()) for i in np.arange(num_users)]]))
         #print(np.where(self.ratings_norms==0)[0])
 
-
+    def default_prediction(self, num_predictions = 5):
+        print("default pred num movies: ",self.movie_num_ratings.shape)
+        movie_index_suggestions = np.argsort(-1*self.movie_num_ratings)[:num_predictions]
+        return np.array([self.index_to_imdb[index] for index in movie_index_suggestions])
     
     def predict(self,users_imdb_ids, users_ratings, num_predictions=5 ):
         data = users_ratings[0]
@@ -94,10 +97,10 @@ class SimUserSuggest():
         weighted_ratings = diags(total_similiarity, 0)*self.ratings
         sum_ratings = np.zeros((self.num_movies))
         for i in np.arange(self.num_similiar):
-            print("sampling from user ",indices[len(indices)-i-1])
+            #print("sampling from user ",indices[len(indices)-i-1])
             sum_ratings += weighted_ratings[[indices[len(indices)-i-1]],:].toarray()[0]
         sum_ratings = sum_ratings
-        print(sum_ratings)
+        #print(sum_ratings)
         movie_rankings = np.argsort(sum_ratings*-1)
         num_selected = 0
         best_imdb_ids = np.zeros((num_suggestions))

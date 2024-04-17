@@ -7,7 +7,11 @@ from django.contrib.auth import get_user_model
 from .models import PastSession, SessionParticipant,Interest
 from .similiarity_suggestion import SimUserSuggest
 import requests
-from ..core.constants import TMDB_BASE_POSTER_URL, TMDB_API_KEY
+#from ..core.constants import TMDB_BASE_POSTER_URL, TMDB_API_KEY
+
+TMDB_BASE_POSTER_URL = 'https://image.tmdb.org/t/p/original'
+
+TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZWNiYTIxZmI5ZWRlNzM4MDVlNWQwYTRmZGI1NDRiOSIsInN1YiI6IjYzZmZiNDA4Njk5ZmI3MDBjNjRhNmMzNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.JNcGKz-C2-B_6mGxqbN6aFrhMey_6FSeJD9ApWe1N9Q'
 
 class RecommendationServiceConsumer(WebsocketConsumer):
     rooms = {}
@@ -59,7 +63,7 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         elif message_type == 'client_choice':
             self.process_user_choice(message.get('choice', False), message.get('movie_id', False))
         elif message_type == 'server_recommendations':
-            self.send_mock_recommendations()
+            self.send_recommendations()
 
     #--------------------HANDLE ROOM STATUS UPDATES-------------------------#
     def add_user_to_room_and_broadcast_status(self):
@@ -148,28 +152,29 @@ class RecommendationServiceConsumer(WebsocketConsumer):
     def generate_recommendations(self, num_recommendations):
         #TBD: add lr-suggestion model
         sessionInterests = Interest.objects.filter(user__sessionparticipant__session__roomName = self.room_name).order_by("user")
-        users = sessionInterests.values_list("user")
-        movieIDs = sessionInterests.values_list("movieID")
-        user_likes = sessionInterests.values_list("like")
+        users = list(sessionInterests.values_list("user"))
+        movieIDs = list(sessionInterests.values_list("movieID"))
+        user_likes = list(sessionInterests.values_list("like"))
+        recommend_IDs = []
         if(len(users)==0):
-            #TBD: return initial recommendation list
-            return self.generate_mock_recommendations()
-        users_ratings = []
-        users_movieIDs= []
-        curr_user_ratings = np.array([])
-        curr_user_IDs = np.array([])
-        curr_user = users[0]
-        for i in range(len(users)):
-            if users[i] != curr_user:
-                users_ratings.append(curr_user_ratings)
-                users_movieIDs.append(curr_user_IDs)
-                curr_user_ratings = np.array([])
-                curr_user_IDs = np.array([])
-                curr_user = users[i]
-            np.append(curr_user_ratings,[1 if user_likes[i] else -1])
-            #tbd: movieIDs stored differently?
-            np.append(curr_user_IDs,movieIDs[i])
-        recommend_IDs = self.simUserAlgo.predict(users_movieIDs,users_ratings,num_predictions=num_recommendations)
+            print('using default predictions')
+            recommend_IDs = self.simUserAlgo.default_prediction(num_predictions=num_recommendations)
+        else:
+            users_ratings = []
+            users_movieIDs= []
+            curr_user_ratings = np.array([])
+            curr_user_IDs = np.array([])
+            curr_user = users[0][0]
+            for i in range(len(users)):
+                if users[i][0] != curr_user:
+                    users_ratings.append(curr_user_ratings)
+                    users_movieIDs.append(curr_user_IDs)
+                    curr_user_ratings = np.array([])
+                    curr_user_IDs = np.array([])
+                    curr_user = users[i][0]
+                np.append(curr_user_ratings,[1 if user_likes[i][0] else -1])
+                np.append(curr_user_IDs,imdb_string_to_int(movieIDs[i][0]))
+            recommend_IDs = self.simUserAlgo.predict(users_movieIDs,users_ratings,num_predictions=num_recommendations)
         recommendations = []
         url = "https://api.themoviedb.org/3/find/{}?external_source=imdb_id"
 
@@ -180,19 +185,18 @@ class RecommendationServiceConsumer(WebsocketConsumer):
 
 
         for id in recommend_IDs:
-            imdb_id = int_to_imdb_string(id)
-            response = requests.get(url.format(imdb_id), headers=headers)["movie_results"]
-
+            imdb_id = int_to_imdb_string(int(id))
+            response = requests.get(url.format(imdb_id), headers=headers).json()["movie_results"]
             if len(response)>0:
                 movie_data = response[0]
-                trailers = get_movie_trailers(movie_data.id)
+                trailers = get_movie_trailers(movie_data['id'])
                 recommendations.append({
                     "imdb_id": imdb_id,
-                    "title":movie_data.title,
-                    "description":movie_data.overview,
-                    "poster_link": TMDB_BASE_POSTER_URL+movie_data.poster_path,
-                    "release_date": movie_data.release_date,
-                    "vote_average": movie_data.vote_average,
+                    "title":movie_data['title'],
+                    "description":movie_data['overview'],
+                    "poster_link": TMDB_BASE_POSTER_URL+movie_data['poster_path'],
+                    "release_date": movie_data['release_date'],
+                    "vote_average": movie_data['vote_average'],
                     "trailers": trailers,
                 })
             else:
@@ -200,7 +204,12 @@ class RecommendationServiceConsumer(WebsocketConsumer):
 
         return recommendations
 
-
+    def send_recommendations(self):
+        recs = self.generate_recommendations(10)
+        self.send(text_data=json.dumps({
+            "type": "recommendations",
+            "message": recs
+        }))
     
     def send_mock_recommendations(self):
         mock_recommendations = self.generate_mock_recommendations()
@@ -231,6 +240,10 @@ def int_to_imdb_string(imdb_int):
         imdb_string= "0"+imdb_string
     return "tt"+imdb_string
 
+def imdb_string_to_int(imdb_string):
+    return int(imdb_string[2:])
+
+
 def get_movie_trailers(TMDb_id):
         url = "https://api.themoviedb.org/3/movie/{}/videos?language=en-US".format(TMDb_id)
 
@@ -240,10 +253,11 @@ def get_movie_trailers(TMDb_id):
         }
 
         response = requests.get(url, headers=headers)
-        videos_list = response['results']
+        videos_list = response.json()['results']
         youtube_video_url_base = 'https://www.youtube.com/watch?v='
         trailer_links = []
         for video_data in videos_list:
             if video_data['site'] =='YouTube' and video_data['type']=='Trailer':
                 trailer_links.append(youtube_video_url_base+video_data['key'])
         return trailer_links
+

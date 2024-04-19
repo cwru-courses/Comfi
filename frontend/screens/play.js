@@ -102,6 +102,37 @@ const styles = StyleSheet.create({
     margin: 5,
     padding: 10,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '80%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  closeButtonText: {
+    fontSize: 24,
+    color: '#aaa',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  matchItem: {
+    fontSize: 16,
+    marginVertical: 5,
+  },
   profiletext: {
     color: 'white',
     fontSize: 20,
@@ -170,6 +201,8 @@ export default function PlayScreen() {
       setUsersReadyStatus(newUsersReadyStatus);
     } else if (data.type === 'server_echo_message') {
       console.log(data.message);
+      const choiceData = data.message;
+      const matchList = JSON.parse(choiceData.match_list);
     } else if (data.type === 'error') {
       console.log(data.message);
     }
@@ -291,6 +324,26 @@ export default function PlayScreen() {
                 <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
               </TouchableOpacity>
             </View>
+            <Modal
+              visible={matchList.length > 0}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setModalVisible(false)}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                    <Text style={styles.closeButtonText}>&times;</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Match List</Text>
+                  <FlatList
+                    data={matchList}
+                    renderItem={({ item }) => <Text style={styles.matchItem}>{item}</Text>}
+                    keyExtractor={(item, index) => index.toString()}
+                  />
+                </View>
+              </View>
+            </Modal>
           </View>
 
           <TouchableWithoutFeedback onPress={closeWebSocket}>

@@ -139,6 +139,10 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             client_choice,
             0
         )
+
+        matches = self.get_matches()
+        matches_json = json.dumps(matches)
+
         # Send the message to the group
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
@@ -148,6 +152,7 @@ class RecommendationServiceConsumer(WebsocketConsumer):
                     "username": self.user_name,
                     "choice": client_choice,
                     "movie_id": movie_id,
+                    "matches_list": matches_json,
                 },
             }
         )
@@ -268,14 +273,6 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         matchList = set.intersection(*[set(likes) for likes in participant_likes.values()])
         return list(matchList)
     
-    def send_matches(self):
-        matches = self.get_matches()
-        self.send(text_data=json.dumps({
-            "type": "matches",
-            "message": matches
-        }))
-
-        
 
 def int_to_imdb_string(imdb_int):
     imdb_string = str(imdb_int)

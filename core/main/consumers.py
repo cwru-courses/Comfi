@@ -133,6 +133,12 @@ class RecommendationServiceConsumer(WebsocketConsumer):
     #----------------HANDLE RECOMMENDATION SYSTEM UPDATES-------------------#
     def process_user_choice(self, client_choice, movie_id):
         print(f"{client_choice} : {movie_id}")
+        Interest.objects.create(
+            get_user_model().objects.get(username=self.user_name),
+            movie_id,
+            client_choice,
+            0
+        )
         # Send the message to the group
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,

@@ -1,9 +1,9 @@
-import React, { View, Image, StyleSheet } from 'react-native';
-import Swiper from 'react-native-swiper';
+import React, { Image, StyleSheet } from 'react-native';
+import Swipeable from 'react-native-swipe-gestures';
 
 const styles = StyleSheet.create({
   wrapper: {},
-  slide: {
+  slider: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
@@ -18,15 +18,25 @@ const styles = StyleSheet.create({
   },
 });
 
-function Gallery({ images, video }) {
+function Gallery({ movieDetails, handleUserChoice, onNext }) {
+  const onSwipeLeft = (movieID) => {
+    handleUserChoice(true, movieID);
+    onNext();
+  };
+
+  const onSwipeRight = (movieID) => {
+    handleUserChoice(false, movieID);
+    onNext();
+  };
+
   return (
-    <Swiper style={styles.wrapper} showsButtons>
-      {images.map((image, index) => (
-        <View style={styles.slide} key={index}>
-          <Image style={styles.image} source={{ uri: image }} />
-        </View>
-      ))}
-    </Swiper>
+    <Swipeable
+      onSwipeLeft={() => onSwipeLeft(movieDetails?.imdb_id)}
+      onSwipeRight={() => onSwipeRight(movieDetails?.imdb_id)}
+      style={styles.slider}
+    >
+      <Image style={styles.image} source={{ uri: movieDetails?.poster_link }} />
+    </Swipeable>
   );
 }
 

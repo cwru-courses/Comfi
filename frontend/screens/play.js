@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TouchableWithoutFeedback, View, Text, StyleSheet, TextInput, Image, ScrollView, TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
@@ -17,9 +24,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // marginTop: 10,
-    // marginHorizontal: 25,
-    // margin: 200,
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -80,7 +84,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 55,
     padding: 5,
-
   },
   headertext: {
     color: '#d81159',
@@ -93,7 +96,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   smallcontainer: {
-    // flex: 1,
     backgroundColor: 'dimgrey',
     alignItems: 'right',
     justifyContent: 'right',
@@ -109,7 +111,6 @@ const styles = StyleSheet.create({
     margin: 2,
     textAlign: 'left',
     justifyContent: 'flex-end',
-    // flexDirection: 'row',
     fontWeight: 'bold',
     flexWrap: 'wrap',
   },
@@ -123,34 +124,61 @@ export default function PlayScreen() {
   const [usersReadyStatus, setUsersReadyStatus] = useState({}); // 'Ready' status of users in room
   const [usersInRoom, setUsersInRoom] = useState([]); // All users in room
   const [allInRoomReady, setAllInRoomReady] = useState(false); // All users in room ready
+  const [recommendations, setRecommendations] = useState(null);
+  const [movieIndex, setMovieIndex] = useState(0);
+  const [recsReady, setRecsReady] = useState(false);
 
   // Function to create WebSocket
   const createWebSocket = () => {
     if (channelId === '') return;
-    const ws = new WebSocket(`ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/${username}/`, {
-      onOpen: () => console.log('opened'),
-      shouldReconnect: true,
-      timeout: 120,
-    });
+    const ws = new WebSocket(
+      `ws://${ENDPOINT_BASE_URL}:8000/ws/bar/${channelId}/${username}/`,
+      {
+        onOpen: () => console.log('opened'),
+        shouldReconnect: true,
+        timeout: 120,
+      },
+    );
     // eslint-disable-next-line no-use-before-define
     ws.onmessage = handleWebSocketMessage;
     setWebSocket(ws);
   };
 
-  useEffect(() => () => {
-    if (websocket) {
-      websocket.close();
-      setWebSocket(null);
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (websocket) {
+        websocket.close();
+        setWebSocket(null);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
-    const numUsersReady = Object.values(usersReadyStatus).filter((status) => status).length;
+    if (recommendations) {
+      setRecsReady(true);
+      console.log('Here it was set to true');
+      console.log(recommendations);
+    }
+    console.log('recommendations not ready yet');
+  }, [recommendations]);
+
+  useEffect(() => {
+    const numUsersReady = Object.values(usersReadyStatus).filter(
+      (status) => status,
+    ).length;
 
     const allReady = usersInRoom.length > 0 && numUsersReady === usersInRoom.length;
 
+    // Once all in the room ready, we need to get the recommendation to show to the user
+    if (allReady) {
+      testRecommendataions();
+    }
+
     setAllInRoomReady(allReady);
   }, [usersReadyStatus, usersInRoom]);
+
+  useEffect(() => {});
 
   const handleWebSocketMessage = (e) => {
     const data = JSON.parse(e.data);
@@ -170,6 +198,11 @@ export default function PlayScreen() {
       setUsersReadyStatus(newUsersReadyStatus);
     } else if (data.type === 'server_echo_message') {
       console.log(data.message);
+    } else if (data.type === 'recommendations') {
+      console.log(data.message);
+      setRecommendations(data.message);
+    } else if (data.type === 'server_terminate') {
+      closeWebSocket();
     } else if (data.type === 'error') {
       console.log(data.message);
     }
@@ -178,7 +211,13 @@ export default function PlayScreen() {
   const sendChoice = (userChoice, movieID) => {
     // Send the 'choice' for a movie to server
     if (websocket) {
-      websocket.send(JSON.stringify({ type: 'client_choice', choice: userChoice, movie_id: movieID }));
+      websocket.send(
+        JSON.stringify({
+          type: 'client_choice',
+          choice: userChoice,
+          movie_id: movieID,
+        }),
+      );
     }
   };
 
@@ -201,17 +240,15 @@ export default function PlayScreen() {
     if (websocket) {
       const newReadyStatus = !readyStatus;
       setReadyStatus(newReadyStatus);
-      websocket.send(JSON.stringify({ type: 'client_ready_status', status: newReadyStatus }));
+      websocket.send(
+        JSON.stringify({ type: 'client_ready_status', status: newReadyStatus }),
+      );
     }
   };
 
-  // images stores the gallery pictures
-  const images = [
-    'https://www.gamespot.com/a/uploads/original/1597/15976769/4097300-download%2826%29.jpg',
-    'https://picsum.photos/20/30',
-    'https://picsum.photos/200/300',
-    'https://picsum.photos/2000/3000',
-  ];
+  const testRecommendataions = () => {
+    websocket.send(JSON.stringify({ type: 'server_recommendations' }));
+  };
 
   return (
     <View style={styles.page}>
@@ -233,9 +270,9 @@ export default function PlayScreen() {
           </TouchableWithoutFeedback>
         </>
       )}
-      {websocket && (!allInRoomReady ? (
+      {websocket && !allInRoomReady && (
 
-        // -----------WAITING SCREEN-------------//
+      // -----------WAITING SCREEN-------------//
         <View>
           <Text style={[styles.headertext, { fontSize: 28, padding: 10 }]}>Waiting Room</Text>
           {
@@ -275,22 +312,15 @@ export default function PlayScreen() {
         </View>
         // --------------------------------------//
 
-      ) : (
+      )}
+      {allInRoomReady && (recsReady ? (
         <>
           <View style={styles.container}>
-            <Gallery images={images} />
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice('Previous', 'MOVIE_ID')}>
-                <Image style={styles.imageforbutton} source={require('../assets/previous.png')} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice('Like', 'MOVIE_ID')}>
-                <Image style={styles.imageforbutton} source={require('../assets/play_button.png')} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.imagebutton} onPress={() => sendChoice('Next', 'MOVIE_ID')}>
-                <Image style={styles.imageforbutton} source={require('../assets/next.png')} />
-              </TouchableOpacity>
-            </View>
+            <Gallery
+              movieDetails={recommendations[movieIndex]}
+              handleUserChoice={sendChoice}
+              onNext={() => setMovieIndex((prevIndex) => prevIndex + 1)}
+            />
           </View>
 
           <TouchableWithoutFeedback onPress={closeWebSocket}>
@@ -301,6 +331,8 @@ export default function PlayScreen() {
             </View>
           </TouchableWithoutFeedback>
         </>
+      ) : (
+        <ActivityIndicator size="large" color="white" />
       ))}
     </View>
   );

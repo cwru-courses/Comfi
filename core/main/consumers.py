@@ -244,6 +244,31 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             "type": "server_terminate"
         }))
 
+    def get_matches(self):
+        sessionInterests = Interest.objects.filter(user__sessionparticipant__session__roomName = self.room_name).order_by("user")
+        users = list(sessionInterests.values_list("user"))
+        movieIDs = list(sessionInterests.values_list("movieID"))
+        user_likes = list(sessionInterests.values_list("like"))
+
+        participant_likes = {}
+        
+        for user, movieID, like in zip(users, movieIDs, user_likes):
+            if like:  # Only consider movies that the participant likes
+                if user not in participant_likes:
+                    participant_likes[user] = []
+                participant_likes[user].append(movieID)
+
+        # Find the intersection of likes among all participants
+        matchList = set.intersection(*[set(likes) for likes in participant_likes.values()])
+        return list(matchList)
+    
+    def send_matches(self):
+        matches = self.get_matches()
+        self.send(text_data=json.dumps({
+            "type": "matches",
+            "message": matches
+        }))
+
         
 
 def int_to_imdb_string(imdb_int):

@@ -132,26 +132,11 @@ class RecommendationServiceConsumer(WebsocketConsumer):
 
     #----------------HANDLE RECOMMENDATION SYSTEM UPDATES-------------------#
     def process_user_choice(self, client_choice, movie_id):
-        print(f"{client_choice} : {movie_id}")
-        Interest.objects.create(
-            get_user_model().objects.get(username=self.user_name),
-            movie_id,
-            client_choice,
-            0
+        Interest.objects.update_or_create(
+            user=get_user_model().objects.get(username=self.user_name),
+            movieID=movie_id,
+            defaults={'like':client_choice, 'timesViewed':0}
         )
-        # Send the message to the group
-        async_to_sync(self.channel_layer.group_send)(
-            self.group_name,
-            {
-                "type": "server_echo_message",
-                "message": {
-                    "username": self.user_name,
-                    "choice": client_choice,
-                    "movie_id": movie_id,
-                },
-            }
-        )
-        # TODO: Update to add choice to Interest table
 
     def generate_mock_recommendations(self):
         mock_recommendations = [
@@ -160,8 +145,6 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         ]
         return mock_recommendations
     
-    
-
     def generate_recommendations(self, num_recommendations):
         #TBD: add lr-suggestion model
         sessionInterests = Interest.objects.filter(user__sessionparticipant__session__roomName = self.room_name).order_by("user")
@@ -187,6 +170,8 @@ class RecommendationServiceConsumer(WebsocketConsumer):
                     curr_user = users[i][0]
                 np.append(curr_user_ratings,[1 if user_likes[i][0] else -1])
                 np.append(curr_user_IDs,imdb_string_to_int(movieIDs[i][0]))
+            users_ratings.append(curr_user_ratings)
+            users_movieIDs.append(curr_user_IDs)
             recommend_IDs = self.simUserAlgo.predict(users_movieIDs,users_ratings,num_predictions=num_recommendations)
         recommendations = []
         url = "https://api.themoviedb.org/3/find/{}?external_source=imdb_id"
@@ -195,7 +180,6 @@ class RecommendationServiceConsumer(WebsocketConsumer):
             "accept": "application/json",
             "Authorization": "Bearer "+ TMDB_API_KEY
         }
-
 
         for id in recommend_IDs:
             imdb_id = int_to_imdb_string(int(id))
@@ -249,9 +233,9 @@ class RecommendationServiceConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             "type": "server_terminate"
         }))
+    #-----------------------------------------------------------------------#
 
-        
-
+#-----------------------RETRIEVE MOVIE DETAILS--------------------------#
 def int_to_imdb_string(imdb_int):
     imdb_string = str(imdb_int)
     while(len(imdb_string)<7):
@@ -260,7 +244,6 @@ def int_to_imdb_string(imdb_int):
 
 def imdb_string_to_int(imdb_string):
     return int(imdb_string[2:])
-
 
 def get_movie_trailers(TMDb_id):
         url = "https://api.themoviedb.org/3/movie/{}/videos?language=en-US".format(TMDb_id)
@@ -278,5 +261,4 @@ def get_movie_trailers(TMDb_id):
             if video_data['site'] =='YouTube' and video_data['type']=='Trailer':
                 trailer_links.append(youtube_video_url_base+video_data['key'])
         return trailer_links
-
-
+#-----------------------------------------------------------------------#

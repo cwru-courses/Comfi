@@ -149,6 +149,7 @@ export default function PlayScreen() {
       if (websocket) {
         websocket.close();
         setWebSocket(null);
+        setRecommendations(null);
       }
     },
     [],
@@ -200,7 +201,10 @@ export default function PlayScreen() {
       console.log(data.message);
     } else if (data.type === 'recommendations') {
       console.log(data.message);
-      setRecommendations(data.message);
+      setRecommendations((recs) => [
+        ...(recs || []),
+        ...data.message,
+      ]);
     } else if (data.type === 'server_terminate') {
       closeWebSocket();
     } else if (data.type === 'error') {
@@ -223,6 +227,8 @@ export default function PlayScreen() {
 
   const closeWebSocket = () => {
     // Reset all state variables to initial value on room closure
+    setRecommendations(null);
+    setMovieIndex(0);
     setReadyStatus(false);
     setAllInRoomReady(false);
     setUsersReadyStatus({});
@@ -319,7 +325,13 @@ export default function PlayScreen() {
             <Gallery
               movieDetails={recommendations[movieIndex]}
               handleUserChoice={sendChoice}
-              onNext={() => setMovieIndex((prevIndex) => prevIndex + 1)}
+              onNext={() => {
+                setMovieIndex((prevIndex) => prevIndex + 1);
+                if (movieIndex > (recommendations.length / 2)) {
+                  testRecommendataions();
+                }
+              }}
+              movieIndex
             />
           </View>
 

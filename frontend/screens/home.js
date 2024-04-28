@@ -4,10 +4,17 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
-import { ENDPOINT_BASE_URL } from '../config/constants';
+import { ENDPOINT_BASE_URL, TMDB_API_KEY, TMDB_BASE_POSTER_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
 
 const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    backgroundColor: 'black',
+    alignItems: 'center',
+    paddingTop: 55,
+    padding: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: 'dimgrey',
@@ -27,15 +34,6 @@ const styles = StyleSheet.create({
     margin: 5,
     padding: 10,
   },
-  button: {
-    backgroundColor: 'grey',
-    borderRadius: 12,
-    padding: 10,
-    margin: 5,
-    width: 250,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   text: {
     color: 'white',
     fontSize: 16,
@@ -47,29 +45,9 @@ const styles = StyleSheet.create({
   },
   titletext: {
     color: 'white',
-    fontSize: 32,
+    fontSize: 28,
     padding: 2,
     fontWeight: 'bold',
-    margin: 2,
-    textAlign: 'left',
-    flexDirection: 'column',
-    flexWrap: 'wrap',
-  },
-  headertext: {
-    color: '#d81159',
-    fontSize: 32,
-    padding: 2,
-    fontWeight: 'bold',
-    margin: 2,
-    textAlign: 'left',
-    flexDirection: 'column',
-    flexWrap: 'wrap',
-  },
-
-  whitetext: {
-    color: 'white',
-    fontSize: 16,
-    padding: 2,
     margin: 2,
     textAlign: 'left',
     flexDirection: 'column',
@@ -82,17 +60,12 @@ const styles = StyleSheet.create({
     margin: 2,
     textAlign: 'left',
     justifyContent: 'flex-end',
-    // flexDirection: 'row',
     fontWeight: 'bold',
     flexWrap: 'wrap',
   },
-  page: {
-    flex: 1,
-    backgroundColor: 'black',
-    alignItems: 'center',
-    paddingTop: 55,
-    padding: 5,
-
+  image: {
+    aspectRatio: 2 / 3,
+    width: '60%',
   },
 });
 
@@ -100,6 +73,7 @@ export default function HomeScreen() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { username } = useAuth();
   const [pastSessions, setPastSessions] = useState(null);
+  const [movieOTD, setMovieOTD] = useState([]);
 
   // Could log errors when calling backend, except for login or logout.
   useEffect(() => {
@@ -115,6 +89,24 @@ export default function HomeScreen() {
       setIsAuthenticated(true);
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    axios
+      .get(
+        'https://api.themoviedb.org/3/trending/movie/week?language=en-US',
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${TMDB_API_KEY}`,
+          },
+        },
+      )
+      .then((response) => {
+        setMovieOTD(response.data.results[0]);
+        console.log(response.data.results[0]);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -138,17 +130,15 @@ export default function HomeScreen() {
         {/* Movie of the Day */}
         <View style={styles.container}>
           <Text style={styles.titletext}>Movie Of The Day</Text>
-          <Text style={styles.text}>
-            Here is a description of the movie. Descriptions can be rather long so it may wrap
-            to the next line like so. here is some more text to see if the box will incrse in
-            size or not
-          </Text>
           <View style={{ alignItems: 'center', justifyContent: 'center', padding: 5 }}>
             <Image
-              source={{ uri: 'https://picsum.photos/300' }}
-              style={{ width: 300, height: 300 }}
+              source={{ uri: TMDB_BASE_POSTER_URL.concat(movieOTD.poster_path) }}
+              style={styles.image}
             />
           </View>
+          <Text style={styles.text}>
+            {movieOTD.overview}
+          </Text>
         </View>
         <Text style={styles.titletext}>Recent Groups</Text>
         {

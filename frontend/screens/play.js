@@ -6,28 +6,19 @@ import {
   StyleSheet,
   TextInput,
   Image,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 import { ENDPOINT_BASE_URL } from '../config/constants';
 import { useAuth } from '../config/AuthContext';
 import Gallery from './Gallery';
+import Waiting from './waiting';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 25,
+    paddingTop: 5,
     justifyContent: 'center',
     alignItems: 'left',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    paddingTop: 150,
   },
   button: {
     alignItems: 'center',
@@ -40,20 +31,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     marginBottom: 10,
   },
-  imagebutton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    elevation: 20,
-    backgroundColor: 'silver',
-    marginHorizontal: 15,
-    marginBottom: 200,
-  },
   text: {
     textAlign: 'left',
-    fontSize: 16,
+    fontSize: 24,
     lineHeight: 21,
     fontWeight: 'bold',
     letterSpacing: 0.25,
@@ -67,16 +47,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderColor: 'grey',
     backgroundColor: 'white',
-  },
-  image: {
-    justifyContent: 'center',
-    height: 500,
-    aspectRatio: 2 / 3,
-  },
-  imageforbutton: {
-    justifyContent: 'center',
-    height: 50,
-    aspectRatio: 2 / 3,
+    borderRadius: 10,
   },
   page: {
     flex: 1,
@@ -84,6 +55,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 55,
     padding: 5,
+    width: '100%',
   },
   headertext: {
     color: '#d81159',
@@ -93,25 +65,6 @@ const styles = StyleSheet.create({
     margin: 2,
     textAlign: 'left',
     flexDirection: 'column',
-    flexWrap: 'wrap',
-  },
-  smallcontainer: {
-    backgroundColor: 'dimgrey',
-    alignItems: 'right',
-    justifyContent: 'right',
-    textAlign: 'left',
-    borderRadius: 10,
-    margin: 5,
-    padding: 10,
-  },
-  profiletext: {
-    color: 'white',
-    fontSize: 20,
-    padding: 2,
-    margin: 2,
-    textAlign: 'left',
-    justifyContent: 'flex-end',
-    fontWeight: 'bold',
     flexWrap: 'wrap',
   },
 });
@@ -158,10 +111,10 @@ export default function PlayScreen() {
   useEffect(() => {
     if (recommendations) {
       setRecsReady(true);
-      console.log('Here it was set to true');
       console.log(recommendations);
+    } else {
+      console.log('recommendations not ready yet');
     }
-    console.log('recommendations not ready yet');
   }, [recommendations]);
 
   useEffect(() => {
@@ -261,7 +214,7 @@ export default function PlayScreen() {
       {websocket == null && (
         <>
           <Text style={styles.headertext}>
-            Create/Join
+            Create / Join
           </Text>
           <View style={{ padding: 60 }} />
           <TextInput placeholder="Room Name" style={styles.input} onChangeText={setChannelId} autoCapitalize="none" autoCorrect={false} />
@@ -269,7 +222,7 @@ export default function PlayScreen() {
             <View>
               <View style={styles.button}>
                 <Text style={styles.text}>
-                  Create New
+                  Join
                 </Text>
               </View>
             </View>
@@ -279,48 +232,28 @@ export default function PlayScreen() {
       {websocket && !allInRoomReady && (
 
       // -----------WAITING SCREEN-------------//
-        <View>
-          <Text style={[styles.headertext, { fontSize: 28, padding: 10 }]}>Waiting Room</Text>
-          {
-            Object.keys(usersReadyStatus).map((user) => (
-              <View style={styles.smallcontainer} key={user}>
-                <Text style={styles.profiletext}>{user}</Text>
-                <Text style={styles.profiletext}>{`${usersReadyStatus[user]}`}</Text>
-              </View>
-            ))
-          }
-          <View style={styles.buttonContainer}>
-            <TouchableWithoutFeedback onPress={closeWebSocket}>
-              <View style={styles.button}>
-                <Text style={styles.text}>
-                  Close Connection
-                </Text>
-              </View>
-            </TouchableWithoutFeedback>
-            {readyStatus ? (
-              <TouchableWithoutFeedback onPress={updateReadyStatus}>
-                <View style={styles.button}>
-                  <Text style={styles.text}>
-                    Ready
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-            ) : (
-              <TouchableWithoutFeedback onPress={updateReadyStatus}>
-                <View style={styles.button}>
-                  <Text style={styles.text}>
-                    Not Ready
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
-            )}
-          </View>
+        <View style={{ width: '100%', position: 'absolute', height: '100%' }}>
+          <Waiting
+            users={usersReadyStatus}
+            handleStatusChange={updateReadyStatus}
+            userReadyStatus={readyStatus}
+            exitRoom={() => closeWebSocket}
+          />
         </View>
         // --------------------------------------//
 
       )}
       {allInRoomReady && (recsReady ? (
         <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <TouchableWithoutFeedback onPress={closeWebSocket}>
+              <Image style={{ aspectRatio: 1, width: 25 }} source={require('../assets/arrow.png')} />
+            </TouchableWithoutFeedback>
+            <Text style={{
+              fontSize: 32, width: '90%', color: '#d81159', textAlign: 'center',
+            }}
+            />
+          </View>
           <View style={styles.container}>
             <Gallery
               movieDetails={recommendations[movieIndex]}
@@ -334,14 +267,6 @@ export default function PlayScreen() {
               movieIndex
             />
           </View>
-
-          <TouchableWithoutFeedback onPress={closeWebSocket}>
-            <View style={styles.button}>
-              <Text style={styles.text}>
-                Close Connection
-              </Text>
-            </View>
-          </TouchableWithoutFeedback>
         </>
       ) : (
         <ActivityIndicator size="large" color="white" />
